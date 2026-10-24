@@ -434,7 +434,7 @@
   <!-- ================= Techniques / import ================= -->
   <section class="panel" id="techPanel" aria-labelledby="techH">
     <p class="kicker">Techniques</p>
-    <h2 id="techH">What is this class teaching? <span class="hint">— type them, or pull one class from your curriculum</span></h2>
+    <h2 id="techH">What's this class teaching? <span class="hint">— type them, or pull one class from your curriculum</span></h2>
     <label for="techList">Techniques — one per line</label>
     <textarea id="techList" rows="6" placeholder="One technique per line, e.g.&#10;Seoi nage&#10;Tai otoshi&#10;Kesa gatame escapes"></textarea>
     <div class="row" style="margin-top:.8rem">
@@ -1106,7 +1106,7 @@
   function createPlan(plan) {
     if (!L.canCreatePlan(state, effectivePlan())) {
       showProBanner("The Free plan saves up to " + L.FREE_PLAN_LIMIT + " class plans",
-        "You already have " + state.plans.length + " saved plans. Pro saves unlimited plans — and nothing you have made is ever deleted; the limit only applies to new plans.");
+        "You already have " + state.plans.length + " saved plans. Pro saves unlimited plans — and nothing you've made is ever deleted; the limit only applies to new plans.");
       return false;
     }
     state.plans.unshift(plan);
@@ -1141,9 +1141,9 @@
     }
     form.classList.add("hidden"); locked.classList.remove("hidden");
     note.textContent =
-      importMode === "locked-plan" ? "Importing from the Curriculum Builder is a Pro feature — it is part of the same Pro plan as the Curriculum Builder itself. Standalone plans (type the techniques above) are free." :
+      importMode === "locked-plan" ? "Importing from the Curriculum Builder is a Pro feature — it's part of the same Pro plan as the Curriculum Builder itself. Standalone plans (type the techniques above) are free." :
       importMode === "locked-signin" ? "Sign in above with the account that holds your curricula, and your rotations will appear here." :
-      "Your curricula could not be reached just now — check your connection, or build the plan standalone above.";
+      "Your curricula couldn't be reached just now — check your connection, or build the plan standalone above.";
   }
   function setImportAvailability(mode) { importMode = mode; renderImport(); }
   function importLesson(data) {
@@ -1834,7 +1834,7 @@ if (M) M.setCloudHook(() => {
     const mod = await import(SUPABASE_CDN);
     sb = mod.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: MM_AUTH_OPTIONS });
   } catch (e) {
-    acctStatus("Accounts are unavailable right now — everything still works on this device.", "err");
+    acctStatus("Accounts aren't available right now — everything still works on this device.", "err");
     if (M) M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
     return;
   }
