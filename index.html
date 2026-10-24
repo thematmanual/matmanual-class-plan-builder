@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mat Manual — Class Plan Builder</title>
+<link rel="icon" href="favicon.png">
+<meta name="theme-color" content="#282d30">
+<meta name="description" content="Turn a curriculum rotation — or your own list of techniques — into one timed class plan: warm-up, technique blocks, partner drills, live practice, conditioning, cool-down, every minute accounted for and ready to print.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+     Mat Manual Class Plan Builder — the main site's v3 design
+     system (same as the Training Journal and Ready to Test?):
+     charcoal #282d30 · ink #20262a · mint #79c9ae · deep teal
+     #28705d · paper #faf7f0 · cream #f3efe4 · hairlines #e3ddcd.
+     Fraunces display / Newsreader reading / Archivo UI.
+     Ruled sections, not cards.
+     ========================================================== */
+  :root{
+    --charcoal:#282d30; --charcoal-deep:#1d2124;
+    --ink:#20262a; --ink-soft:#3c4348;
+    --mint:#79c9ae; --teal:#28705d;
+    --paper:#faf7f0; --paper-deep:#f3efe2; --cream:#f3efe4;
+    --hair:#e3ddcd; --hair-strong:#d8d2bf;
+    --danger:#b03a2e; --ok:#1f5c48;
+    --serif-display:"Fraunces",Georgia,serif;
+    --serif-body:"Newsreader",Georgia,serif;
+    --sans:"Archivo",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--serif-body);font-size:17px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--mint);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .kicker{
+    font-family:var(--sans);font-size:11px;font-weight:600;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--teal);
+  }
+  .kicker.on-dark{color:var(--mint)}
+  .hidden{display:none !important}
+
+  /* ---------- App bar (mirrors the site's charcoal chrome) ---------- */
+  header{
+    background:var(--charcoal);color:var(--cream);
+    display:flex;align-items:center;gap:1rem 1.5rem;flex-wrap:wrap;
+    padding:.65rem 1.25rem;position:sticky;top:0;z-index:50;
+  }
+  header :focus-visible{outline-color:var(--mint)}
+  .brand{display:flex;align-items:center;gap:12px;color:var(--cream);flex:none}
+  .brand:hover{text-decoration:none}
+  .brand img{width:44px;height:auto;flex:none}
+  .brand-name{
+    font-family:var(--serif-display);font-weight:700;font-size:19px;
+    letter-spacing:.05em;line-height:1.05;color:var(--cream);white-space:nowrap;
+  }
+  .brand-name small{
+    display:block;font-family:var(--sans);font-size:8.5px;font-weight:600;
+    letter-spacing:.28em;color:var(--mint);margin-top:4px;
+  }
+  .bar-right{margin-left:auto;display:flex;align-items:center;gap:.6rem 1.4rem;flex-wrap:wrap}
+  .bar-links{display:flex;align-items:center;gap:1.15rem}
+  .bar-links a{
+    font-family:var(--sans);font-size:12px;font-weight:600;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--cream);
+    padding:10px 2px;white-space:nowrap;
+  }
+  .bar-links a:hover{color:var(--mint);text-decoration:none}
+  header .plan{display:flex;background:var(--charcoal-deep);border:1px solid #454c50;border-radius:999px;padding:3px}
+  header .plan button{
+    border:0;background:transparent;color:#aeb6ba;padding:.42rem 1.05rem;border-radius:999px;cursor:pointer;
+    font-family:var(--sans);font-size:.82rem;font-weight:600;letter-spacing:.03em;min-height:34px;
+  }
+  header .plan button.active{background:var(--mint);color:var(--ink)}
+  #planToggle.hidden{display:none}
+
+  /* ---------- Layout & page head ---------- */
+  main{max-width:1160px;margin:0 auto;padding:0 32px 8px}
+  .page-head{padding:40px 0 4px;max-width:880px}
+  .page-head h1{
+    font-family:var(--serif-display);font-weight:560;
+    font-size:clamp(38px,5vw,58px);line-height:1.02;letter-spacing:-.012em;
+    margin:12px 0 14px;
+  }
+  .standfirst{font-size:clamp(18px,2vw,21.5px);line-height:1.5;color:var(--ink-soft);max-width:44em}
+
+  /* ---------- Panels: ruled editorial blocks, not cards ---------- */
+  .panel{border-top:2px solid var(--ink);padding:26px 0 10px;margin:0 0 30px}
+  .panel .kicker{margin:0 0 8px}
+  .panel h2{
+    margin:0 0 .8rem;font-family:var(--serif-display);font-weight:560;
+    font-size:28px;line-height:1.15;color:var(--ink);
+  }
+  .panel h2 .hint{
+    font-family:var(--serif-body);font-style:italic;font-weight:400;
+    font-size:16.5px;letter-spacing:0;text-transform:none;color:var(--ink-soft);
+  }
+  .panel h3{margin:1.4rem 0 .6rem;font-family:var(--serif-display);font-weight:560;font-size:21px;color:var(--ink)}
+  .panel h3:first-child{margin-top:0}
+  .panel-sub{font-size:16.5px;color:var(--ink-soft);margin:-.3rem 0 .9rem;max-width:52em}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+  label{
+    display:block;font-family:var(--sans);font-size:11px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.4rem;
+  }
+  input[type=text],input[type=number],input[type=email],input[type=password],input[type=date],select,textarea{
+    width:100%;padding:.62rem .72rem;border:1px solid var(--hair-strong);border-radius:6px;
+    font-size:15.5px;font-family:var(--sans);color:var(--ink);background:#fff;
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--teal);
+    box-shadow:0 0 0 3px rgba(121,201,174,.38);
+  }
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86em;background:var(--paper-deep);padding:.08em .35em;border-radius:3px}
+
+  /* ---------- Buttons (site language) ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    background:var(--teal);color:#fff;border:1px solid var(--teal);border-radius:999px;
+    padding:.62rem 1.3rem;min-height:44px;
+    font-family:var(--sans);font-size:.93rem;font-weight:600;letter-spacing:.02em;cursor:pointer;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .btn:hover{background:var(--ink);border-color:var(--ink)}
+  .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink-soft)}
+  .btn.secondary:hover{border-color:var(--teal);color:var(--teal);background:transparent}
+  .btn.small{padding:.42rem .95rem;font-size:.83rem;min-height:38px}
+  .btn.locked{background:var(--paper-deep);border-color:var(--hair-strong);color:#6b6552;cursor:not-allowed}
+  .btn.danger{color:var(--danger);border-color:var(--hair-strong)}
+  .btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+  a.btn{text-decoration:none}
+  a.btn:hover{text-decoration:none}
+
+  .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+  .hint{font-family:var(--sans);font-size:13px;color:var(--ink-soft)}
+  .muted-note{font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .status-err{color:var(--danger)}
+  .status-ok{color:var(--ok)}
+  .link-btn{
+    background:none;border:0;padding:4px 2px;cursor:pointer;color:var(--teal);
+    font-family:var(--sans);font-size:13px;font-weight:600;
+  }
+  .link-btn:hover{text-decoration:underline}
+  .link-btn.danger{color:var(--danger)}
+  .badge{
+    display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--hair-strong);
+    border-radius:999px;padding:.14rem .6rem;color:var(--ink-soft);vertical-align:middle;
+  }
+  .badge.pro{background:var(--teal);border-color:var(--teal);color:#fff}
+  .badge.custom{background:var(--paper-deep)}
+
+  /* ---------- Alerts & pro banner ---------- */
+  #alert{display:none;border-radius:6px;padding:.75rem 1rem;margin:0 0 1.1rem;font-family:var(--sans);font-size:.92rem}
+  #alert.warn{display:block;background:#f6ecd4;border:1px solid #d9b45b;color:#6b5510}
+  #alert.err{display:block;background:#f9e8e4;border:1px solid #d08a7a;color:#8c3b2a}
+  #alert.ok{display:block;background:#e7f2ec;border:1px solid var(--mint);color:var(--ok)}
+  .pro-banner{
+    display:none;background:var(--charcoal);color:var(--cream);
+    border-top:3px solid var(--mint);padding:1.4rem 1.5rem;margin:0 0 1.6rem;
+  }
+  .pro-banner.show{display:block}
+  .pro-banner strong{font-family:var(--serif-display);font-weight:560;font-size:22px}
+  .pro-banner p{color:#d8d2bf;max-width:46em}
+  .pro-banner .btn{background:var(--mint);border-color:var(--mint);color:var(--ink)}
+  .pro-banner .btn:hover{background:var(--cream);border-color:var(--cream);color:var(--ink)}
+  .pro-banner .btn.secondary{background:transparent;border-color:#8f979c;color:var(--cream)}
+  .pro-banner .btn.secondary:hover{border-color:var(--mint);color:var(--mint)}
+  .pro-lock{border:1px dashed var(--hair-strong);border-radius:8px;padding:1rem 1.1rem;background:var(--paper-deep)}
+
+  .chip{
+    background:transparent;color:var(--ink);border:1px solid var(--ink-soft);
+    border-radius:999px;padding:.42rem .95rem;min-height:38px;cursor:pointer;
+    font-family:var(--sans);font-size:.83rem;font-weight:600;letter-spacing:.02em;
+  }
+  .chip:hover{border-color:var(--teal);color:var(--teal)}
+  .chip.active{background:var(--teal);border-color:var(--teal);color:#fff}
+
+  /* ---------- Art switcher ---------- */
+  .art-switch{display:flex;gap:.5rem;flex-wrap:wrap;margin:.4rem 0 .2rem}
+
+  /* ---------- Combination list ---------- */
+  .combo-row{
+    display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;width:100%;
+    padding:.8rem .2rem;border:0;border-bottom:1px solid var(--hair);
+    background:transparent;text-align:left;cursor:pointer;font:inherit;color:inherit;
+  }
+  .combo-row:hover{background:var(--paper-deep)}
+  .combo-row.active{box-shadow:inset 3px 0 0 var(--teal)}
+  .combo-row .cr-name{font-family:var(--serif-display);font-weight:560;font-size:19px}
+  .combo-row .cr-meta{color:var(--ink-soft);font-size:15px}
+  .combo-row .cr-count{margin-left:auto;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--teal);white-space:nowrap}
+  .combo-tools{display:flex;gap:.4rem;align-items:center;padding:.35rem .2rem .8rem;border-bottom:1px solid var(--hair)}
+
+  /* ---------- Chain editor ---------- */
+  .builder-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:2rem;align-items:start}
+  .step-row{
+    display:flex;gap:.6rem;align-items:flex-start;
+    padding:.6rem 0;border-bottom:1px solid var(--hair);
+  }
+  .step-row .s-num{
+    font-family:var(--sans);font-weight:700;font-size:13px;color:var(--teal);
+    border:1px solid var(--hair-strong);border-radius:50%;
+    width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;
+    background:#fff;margin-top:2px;
+  }
+  .step-row.reaction{
+    border-left:3px solid var(--mint);padding-left:.8rem;margin-left:.35rem;
+    border-bottom:1px dashed var(--hair);
+  }
+  .step-row.reaction .s-num{
+    border-radius:999px;width:auto;height:auto;padding:.12rem .5rem;
+    font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);
+    background:var(--mint);border-color:var(--mint);
+  }
+  .step-row .s-body{flex:1;min-width:160px}
+  .step-row .s-name{font-size:17.5px;font-weight:600}
+  .step-row.reaction .s-name{font-weight:400;font-style:italic;color:var(--ink-soft)}
+  .step-row .s-ctrls{display:flex;gap:.15rem;flex:none}
+  .step-row .s-ctrls button{
+    background:none;border:1px solid transparent;border-radius:6px;cursor:pointer;
+    color:var(--ink-soft);font-family:var(--sans);font-size:14px;font-weight:700;
+    width:32px;height:32px;line-height:1;
+  }
+  .step-row .s-ctrls button:hover{border-color:var(--hair-strong);color:var(--teal)}
+  .step-row .s-ctrls button:disabled{opacity:.3;cursor:default}
+  .step-edit{display:flex;gap:.5rem;flex-wrap:wrap}
+  .step-edit input{flex:1;min-width:170px}
+  .empty-note{border:1px dashed var(--hair-strong);border-radius:8px;padding:1rem 1.1rem;background:var(--paper-deep);font-size:16px}
+
+  /* ---------- Fight plan ---------- */
+  .fight-plan{background:var(--charcoal);color:var(--cream);padding:1.2rem 1.3rem 1.3rem;border-top:3px solid var(--mint)}
+  .fight-plan .kicker{color:var(--mint)}
+  .fight-plan h3{font-family:var(--serif-display);font-weight:560;font-size:22px;margin:.2rem 0 .8rem;color:var(--cream)}
+  .fight-plan ol{list-style:none;margin:0;padding:0;counter-reset:none}
+  .fight-plan li{display:flex;gap:.7rem;align-items:baseline;padding:.42rem 0;border-bottom:1px solid #3a4045}
+  .fight-plan li:last-child{border-bottom:0}
+  .fight-plan .fp-n{
+    font-family:var(--sans);font-weight:700;font-size:12.5px;color:var(--ink);
+    background:var(--mint);border-radius:50%;width:24px;height:24px;flex:none;
+    display:flex;align-items:center;justify-content:center;transform:translateY(3px);
+  }
+  .fight-plan .fp-name{font-size:17px}
+  .fight-plan li.reaction{
+    border-bottom:0;padding:.55rem 0 .1rem;color:#d8d2bf;font-style:italic;font-size:15.5px;
+  }
+  .fight-plan .fp-note{color:#aeb6ba;font-size:14.5px;margin:.9rem 0 0}
+  .fight-plan .badge{border-color:#454c50;color:#d8d2bf}
+
+  /* ---------- Technique picker ---------- */
+  .pick-group{margin:0 0 1.1rem}
+  .pick-group h3{margin:.9rem 0 .45rem;font-size:19px}
+  .tech-chips{display:flex;gap:.4rem;flex-wrap:wrap}
+  .tech-chips .chip{min-height:36px;padding:.35rem .8rem;font-weight:500}
+  .search-row{display:grid;grid-template-columns:1fr;gap:.8rem}
+  @media (min-width:760px){ .search-row{grid-template-columns:1fr 1fr} }
+
+  /* ---------- Preset gallery ---------- */
+  .preset-row{padding:1rem 0;border-bottom:1px solid var(--hair)}
+  .preset-row .p-head{display:flex;gap:.7rem;align-items:baseline;flex-wrap:wrap}
+  .preset-row .p-name{font-family:var(--serif-display);font-weight:560;font-size:21px}
+  .preset-row .p-purpose{color:var(--ink-soft);font-size:16px;margin:.15rem 0 .5rem;max-width:52em}
+  .preset-steps{list-style:none;margin:.3rem 0 .7rem;padding:0}
+  .preset-steps li{display:inline;font-size:15.5px}
+  .preset-steps li + li::before{content:" → ";color:var(--teal);font-weight:700}
+  .preset-steps li.reaction{font-style:italic;color:var(--ink-soft)}
+  .preset-steps li.reaction + li::before{content:" ↳ ";color:var(--teal)}
+
+  footer.site{
+    border-top:2px solid var(--ink);margin-top:10px;padding:22px 0 40px;
+    font-family:var(--sans);font-size:13px;color:var(--ink-soft);
+  }
+
+  /* ---------- Combination sheet (print only) ---------- */
+  #sheet{display:none}
+
+  /* ---------- Class plan editor ---------- */
+  .seg-list{display:flex;flex-direction:column;gap:0}
+  .seg-row{border-top:1px solid var(--hair);padding:14px 0 10px}
+  .seg-row:first-child{border-top:0}
+  .seg-head{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap}
+  .seg-head .seg-title{flex:2;min-width:170px}
+  .seg-head .seg-min{flex:0 0 92px}
+  .seg-head .seg-tools{display:flex;gap:.35rem;margin-left:auto}
+  .seg-items{margin-top:.55rem}
+  .seg-note{margin-top:.45rem}
+  .total-bar{
+    display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;
+    border-top:2px solid var(--ink);border-bottom:1px solid var(--hair-strong);
+    padding:.7rem 0;margin:6px 0 14px;
+    font-family:var(--sans);font-size:14.5px;font-weight:600;
+  }
+  .total-bar .over{color:var(--danger)}
+  .total-bar .exact{color:var(--ok)}
+  .plan-row{border-top:1px solid var(--hair);padding:12px 0}
+  .plan-row:first-child{border-top:0}
+  .plan-row .meta{font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);letter-spacing:.02em}
+  select.plan-select{max-width:520px}
+
+  /* ---------- Class plan sheet (print only) ---------- */
+  #sheet{display:none}
+  @media print{
+    header, main > *:not(#sheet), footer.site{display:none !important}
+    main{max-width:none;padding:0}
+    #sheet{display:block;color:#000}
+    #sheet h1{font-family:var(--serif-display);font-size:29px;margin:0 0 2px}
+    #sheet .meta{font-family:var(--sans);font-size:13px;color:#333;margin:0 0 4px}
+    #sheet .source{font-size:15.5px;font-style:italic;margin:.2rem 0 1rem}
+    #sheet table{width:100%;border-collapse:collapse;font-size:15.5px}
+    #sheet th{font-family:var(--sans);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;text-align:left;border-bottom:2px solid #000;padding:6px 8px 6px 0}
+    #sheet td{border-bottom:1px solid #ddd;padding:8px 8px 8px 0;vertical-align:top}
+    #sheet td.time{font-family:var(--sans);font-size:13.5px;white-space:nowrap;width:118px}
+    #sheet td.mins{font-family:var(--sans);font-size:13.5px;white-space:nowrap;width:64px}
+    #sheet .seg-name{font-weight:600}
+    #sheet ul{margin:4px 0 0;padding-left:18px}
+    #sheet .seg-note{font-style:italic;color:#333;margin-top:3px}
+    #sheet .notes{margin-top:20px;border-top:2px solid #000;padding-top:10px}
+    #sheet .foot{font-family:var(--sans);font-size:12px;color:#555;border-top:1px solid #ccc;margin-top:24px;padding-top:8px}
+  }
+  @media (max-width:760px){
+    main{padding:0 16px 8px}
+    .page-head{padding-top:26px}
+    .btn.small{min-height:44px}
+    .seg-head .seg-tools{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://matmanual.com">
+    <img src="logo-mark.png" alt="">
+    <span class="brand-name">MAT MANUAL<small>CLASS PLAN BUILDER</small></span>
+  </a>
+  <div class="bar-right">
+    <div class="plan" id="planToggle" role="group" aria-label="Plan">
+      <button id="planFree" class="active" aria-pressed="true">Free</button>
+      <button id="planPro" aria-pressed="false">Pro</button>
+    </div>
+    <nav class="bar-links" aria-label="Mat Manual">
+      <a href="https://matmanual.com">← Mat Manual</a>
+      <a href="https://matmanual.com/tools/">Tools</a>
+      <a href="https://matmanual.com/privacy/">Privacy</a>
+      <a href="https://matmanual.com/terms/">Terms</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <p class="kicker">Mat Manual · Tools</p>
+    <h1>Class Plan Builder</h1>
+    <p class="standfirst">A good class is a budget of minutes, spent on purpose. Take one class from your Curriculum Builder rotation — or type the techniques yourself — pick the class length and the level mix, and this builds the timed plan: warm-up, technique blocks, partner drills, live practice in your art's own terms, conditioning, cool-down. Every segment is editable, the minutes always add up to the class you actually teach, and the printed sheet is the one you carry onto the mat. One honest note: a plan organises the hour. It cannot teach it — that part is still yours.</p>
+  </div>
+
+  <div id="alert" role="alert"></div>
+  <div id="srStatus" class="sr-only" role="status" aria-live="polite"></div>
+
+  <div class="pro-banner" id="proBanner">
+    <strong id="proBannerTitle">Unlock with Pro</strong>
+    <p id="proBannerText" style="margin:.4rem 0 .9rem"></p>
+    <div class="row">
+      <button class="btn" id="proUpgrade">Switch to Pro (demo — Stripe unlock in production)</button>
+      <button class="btn secondary" id="proDismiss">Not now</button>
+    </div>
+  </div>
+
+  <!-- ================= Account ================= -->
+  <section class="panel" id="accountPanel" aria-labelledby="acctH">
+    <p class="kicker">Account</p>
+    <h2 id="acctH">Save across devices <span class="hint">— optional; everything works on this device alone</span></h2>
+    <div id="acctSignedOut">
+      <div class="grid2">
+        <div>
+          <label for="acctEmail">Email</label>
+          <input type="email" id="acctEmail" autocomplete="email">
+        </div>
+        <div>
+          <label for="acctPassword">Password</label>
+          <input type="password" id="acctPassword" autocomplete="current-password">
+        </div>
+      </div>
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" id="btnSignIn">Sign in</button>
+        <button class="btn secondary" id="btnSignUp">Create account</button>
+      </div>
+      <p class="muted-note" style="margin-top:.6rem">One Mat Manual account works in every tool, and one Pro plan unlocks them all. New accounts need a password of at least 10 characters with letters and digits.</p>
+    </div>
+    <div id="acctSignedIn" style="display:none">
+      <p style="margin:.2rem 0 .6rem">Signed in as <strong id="acctUserEmail"></strong> <span class="badge" id="acctPlanBadge">Free plan</span></p>
+      <div class="row">
+        <button class="btn secondary" id="btnCloudSave">Save to cloud now</button>
+        <button class="btn secondary" id="btnCloudLoad">Load from cloud</button>
+        <button class="btn secondary" id="btnSignOut">Sign out</button>
+      </div>
+      <p class="muted-note" id="cloudStatus" style="margin-top:.6rem"></p>
+    </div>
+    <p class="muted-note" id="acctStatus" style="margin-top:.6rem"></p>
+  </section>
+
+  <!-- ================= Start a plan ================= -->
+  <section class="panel" id="setupPanel" aria-labelledby="setupH">
+    <p class="kicker">The class</p>
+    <h2 id="setupH">Start a class plan <span class="hint">— the shape of the hour, before the techniques</span></h2>
+    <div class="grid2">
+      <div>
+        <label for="pArt">Art — sets the language of the plan</label>
+        <select id="pArt"></select>
+      </div>
+      <div>
+        <label for="pName">Plan name</label>
+        <input type="text" id="pName" maxlength="90" placeholder="e.g. Thursday beginners">
+      </div>
+      <div>
+        <label for="pMinutes">Class length (minutes)</label>
+        <select id="pMinutes">
+          <option value="30">30 minutes</option>
+          <option value="45" selected>45 minutes</option>
+          <option value="60">60 minutes</option>
+          <option value="75">75 minutes</option>
+          <option value="90">90 minutes</option>
+        </select>
+      </div>
+      <div>
+        <label for="pMix">Level mix</label>
+        <select id="pMix">
+          <option value="beginner">Mostly beginners — no live rounds, more drilling</option>
+          <option value="mixed" selected>Mixed levels</option>
+          <option value="advanced">Advanced class — more live practice</option>
+        </select>
+      </div>
+      <div>
+        <label for="pStart">Start time (optional — for clock times on the print sheet)</label>
+        <input type="time" id="pStart">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Techniques / import ================= -->
+  <section class="panel" id="techPanel" aria-labelledby="techH">
+    <p class="kicker">Techniques</p>
+    <h2 id="techH">What is this class teaching? <span class="hint">— type them, or pull one class from your curriculum</span></h2>
+    <label for="techList">Techniques — one per line</label>
+    <textarea id="techList" rows="6" placeholder="One technique per line, e.g.&#10;Seoi nage&#10;Tai otoshi&#10;Kesa gatame escapes"></textarea>
+    <div class="row" style="margin-top:.8rem">
+      <button class="btn" id="btnBuild">Build the timed plan</button>
+      <span class="hint" id="buildNote"></span>
+    </div>
+
+    <div id="importBox" style="margin-top:1.6rem">
+      <h3>Import from the Curriculum Builder <span class="badge" id="importBadge">Pro</span></h3>
+      <p class="panel-sub">Pick one of your saved curricula, then the class in its rotation. The plan is built from that class's requirements, at the curriculum's class length.</p>
+      <div id="importLocked">
+        <p class="muted-note" id="importLockNote"></p>
+      </div>
+      <div id="importForm" class="hidden">
+        <div class="grid2">
+          <div>
+            <label for="impCurriculum">Your curriculum</label>
+            <select id="impCurriculum" class="plan-select"></select>
+          </div>
+          <div>
+            <label for="impLesson">Class in the rotation</label>
+            <select id="impLesson" class="plan-select"></select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:.8rem">
+          <button class="btn" id="btnImport">Import this class</button>
+          <span class="hint" id="importNote"></span>
+        </div>
+      </div>
+      <p class="muted-note" id="importStatus" style="margin-top:.6rem"></p>
+    </div>
+  </section>
+
+  <!-- ================= The plan ================= -->
+  <section class="panel hidden" id="planPanel" aria-labelledby="planH">
+    <p class="kicker">The plan</p>
+    <h2 id="planH"><span id="planTitle">Your class plan</span> <span class="hint" id="planMeta"></span></h2>
+    <div style="max-width:520px;margin-bottom:.6rem">
+      <label for="planName">Plan name</label>
+      <input type="text" id="planName" maxlength="90">
+    </div>
+    <div class="total-bar" id="totalBar"></div>
+    <div class="row" style="margin-bottom:1rem">
+      <button class="btn secondary small" id="btnBalance" type="button">Balance minutes to class length</button>
+      <button class="btn secondary small" id="btnPrint" type="button">Print sheet</button>
+      <a class="btn secondary small" href="https://timer.matmanual.com" target="_blank" rel="noopener">Run it on the Timer ↗</a>
+      <button class="btn secondary small" id="btnDupPlan" type="button">Duplicate</button>
+      <button class="btn secondary small danger" id="btnDelPlan" type="button">Delete plan</button>
+    </div>
+    <div class="seg-list" id="segList"></div>
+    <div class="row" style="margin-top:1rem">
+      <select id="addKind" style="max-width:260px">
+        <option value="warmup">Warm-up segment</option>
+        <option value="technique" selected>Technique segment</option>
+        <option value="partner">Partner drill segment</option>
+        <option value="live">Live practice segment</option>
+        <option value="conditioning">Conditioning segment</option>
+        <option value="cooldown">Cool-down segment</option>
+        <option value="custom">Custom segment</option>
+      </select>
+      <button class="btn secondary small" id="btnAddSeg" type="button">Add segment</button>
+    </div>
+    <div style="margin-top:1.2rem">
+      <label for="planNotes">Class notes — reminders for the mat</label>
+      <textarea id="planNotes" rows="3" maxlength="600" placeholder="e.g. Two new starters tonight — pair them with senior students for the drills."></textarea>
+    </div>
+  </section>
+
+  <!-- ================= Saved plans ================= -->
+  <section class="panel" id="savedPanel" aria-labelledby="savedH">
+    <p class="kicker">Saved plans</p>
+    <h2 id="savedH">Your class plans <span class="hint">— on this device, and in your account if you save to the cloud</span></h2>
+    <div id="savedList"></div>
+    <p class="muted-note" id="capNote" style="margin-top:.7rem"></p>
+  </section>
+
+  <section id="sheet" aria-hidden="true"></section>
+</main>
+
+<footer class="site">
+  <p>Mat Manual — Class Plan Builder. A plan organises the hour; the teaching is yours.
+  <a href="https://matmanual.com/privacy/">Privacy</a> · <a href="https://matmanual.com/terms/">Terms</a> · <a href="https://matmanual.com/disclaimer/">Disclaimer</a></p>
+</footer>
+
+<script id="logic">
+/*
+ * Mat Manual — Class Plan Builder · pure logic.
+ *
+ * Everything in this file is dependency-free and DOM-free so the
+ * plan maths can be unit-tested in Node (logic.test.js) and the
+ * exact same bytes can be inlined into index.html (the <script
+ * id="logic"> block there is byte-identical to this file — the
+ * splice script proves it).
+ *
+ * WHAT THIS APP DOES: turn a list of techniques — typed by hand, or
+ * imported from one class in the user's own Curriculum Builder
+ * rotation — into ONE timed class plan: warm-up, technique blocks,
+ * partner drills, live practice, conditioning, cool-down. Segment
+ * minutes ALWAYS sum exactly to the chosen class length; that is
+ * the product's core promise and the tests hammer it across class
+ * lengths and level mixes.
+ *
+ * PER-ART LANGUAGE (multi-domain rule): the six Mat Manual arts do
+ * not run the same class. Segment names come from the selected
+ * art's profile — judo warms up with ukemi and finishes technique
+ * with randori, BJJ rolls, Muay Thai works pads, taekwondo spars
+ * (kyorugi). A term is shared only where every art genuinely uses
+ * it the same way ("warm-up", "conditioning"); everything else is
+ * the profile's own word. A "general" profile covers classes
+ * outside the six arts with neutral labels.
+ *
+ * HONESTY LAW (same as every Mat Manual tool): a class plan is a
+ * plan, not a promise. Nothing here scores a class or claims an
+ * outcome — the logic only divides time, orders segments, stores,
+ * and prints.
+ *
+ * TIERS (app layer, mirroring the sibling tools; RLS enforces
+ * ownership only): Free = up to 3 saved plans, standalone mode
+ * only, on-screen. Pro = unlimited plans, Curriculum Builder
+ * import, and printing. A downgrade deletes nothing — the caps
+ * only block creating NEW plans, and plans already saved stay
+ * fully usable.
+ */
+(function (global) {
+  "use strict";
+
+  // ---- Small utilities -------------------------------------------------------
+
+  var uidCounter = 0;
+  function uid() {
+    uidCounter += 1;
+    return "p" + Date.now().toString(36) + "x" + uidCounter.toString(36) +
+      Math.floor(Math.random() * 0xfffff).toString(36);
+  }
+
+  // User text is kept as inert text: tags stripped, whitespace
+  // collapsed, length-capped (same treatment as the sibling tools).
+  function cleanText(v, max) {
+    var s = String(v === null || v === undefined ? "" : v)
+      .replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    if (max && s.length > max) s = s.slice(0, max).trim();
+    return s;
+  }
+
+  function clampInt(v, lo, hi, fallback) {
+    var n = Math.round(Number(v));
+    if (!isFinite(n)) return fallback;
+    if (n < lo) return lo;
+    if (n > hi) return hi;
+    return n;
+  }
+
+  // ---- The arts and their class language -------------------------------------
+  // segments: display label per segment kind, in the art's own terms.
+  // drillsNote: default framing line for the partner segment.
+  // liveNote: default framing line for the live segment.
+  var PROFILES = {
+    general: {
+      label: "General martial arts",
+      segments: {
+        warmup: "Warm-up", technique: "Technique", partner: "Partner drills",
+        live: "Sparring / live practice", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Work today's techniques with a partner, both sides, both roles.",
+      liveNote: "Live practice built on today's techniques. Keep the intensity agreed before you start."
+    },
+    shotokan: {
+      label: "Shotokan Karate",
+      segments: {
+        warmup: "Warm-up", technique: "Kihon & kata", partner: "Partner drills — kumite",
+        live: "Free sparring — jiyu kumite", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Kumite drills on today's techniques: start from kihon distance, agree the attacks before you begin.",
+      liveNote: "Jiyu kumite. Controlled contact, protective equipment on, today's techniques are the scoring focus."
+    },
+    bjj: {
+      label: "Brazilian Jiu-Jitsu",
+      segments: {
+        warmup: "Warm-up & movement drills", technique: "Technique instruction", partner: "Drilling with a partner",
+        live: "Rolling — live rounds", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Reps with a cooperative partner first, then add resistance in steps.",
+      liveNote: "Live rounds starting from today's positions. Tap early, tap often."
+    },
+    judo: {
+      label: "Kodokan Judo",
+      segments: {
+        warmup: "Warm-up & ukemi", technique: "Technique — uchi-komi & nage-komi", partner: "Partner practice",
+        live: "Randori", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Uchi-komi in moving lines, then nage-komi onto the crash pad in turns.",
+      liveNote: "Randori at the agreed intensity. The throw only counts if uke can fall safely."
+    },
+    muaythai: {
+      label: "Muay Thai",
+      segments: {
+        warmup: "Warm-up & shadow work", technique: "Technique instruction", partner: "Pad work with a partner",
+        live: "Sparring rounds", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Pad rounds on today's techniques — holder calls, striker answers, swap on the bell.",
+      liveNote: "Technical sparring at agreed intensity. Today's techniques are the scoring focus."
+    },
+    taekwondo: {
+      label: "Taekwondo",
+      segments: {
+        warmup: "Warm-up", technique: "Kicks & poomsae", partner: "Partner drills",
+        live: "Sparring — kyorugi", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Partner and paddle drills on today's kicks and poomsae sections, both legs.",
+      liveNote: "Kyorugi rounds at the agreed intensity, full protective equipment."
+    },
+    catch: {
+      label: "Catch Wrestling",
+      segments: {
+        warmup: "Warm-up & tumbling", technique: "Technique instruction", partner: "Partner drilling",
+        live: "Live wrestling", conditioning: "Conditioning", cooldown: "Cool-down & stretch"
+      },
+      drillsNote: "Chain the entries and finishes with a partner: cooperative first, then progressive resistance.",
+      liveNote: "Live goes from today's positions. Submissions are caught and released — control first, always."
+    }
+  };
+  var PROFILE_IDS = Object.keys(PROFILES);
+
+  function profileById(id) {
+    return Object.prototype.hasOwnProperty.call(PROFILES, id) ? PROFILES[id] : PROFILES.general;
+  }
+  function profileLabel(id) { return profileById(id).label; }
+  function segmentLabel(profileId, kind) {
+    var p = profileById(profileId);
+    return p.segments[kind] || PROFILES.general.segments[kind] || kind;
+  }
+
+  // The Curriculum Builder stores the art as free text. Map it to a
+  // profile by looking for the art's own words; anything unrecognised
+  // gets the neutral general profile rather than a wrong art's terms.
+  function mapArtText(text) {
+    var t = String(text || "").toLowerCase();
+    if (/shotokan|karate/.test(t)) return "shotokan";
+    if (/jiu|bjj|gracie/.test(t)) return "bjj";
+    if (/judo/.test(t)) return "judo";
+    if (/muay|thai boxing|kickbox/.test(t)) return "muaythai";
+    if (/taekwondo|tae kwon|tkd/.test(t)) return "taekwondo";
+    if (/catch|wrestling/.test(t)) return "catch";
+    return "general";
+  }
+
+  // ---- Level mixes -------------------------------------------------------------
+  var LEVEL_MIXES = ["beginner", "mixed", "advanced"];
+  function levelMixLabel(mix) {
+    return mix === "beginner" ? "Mostly beginners"
+      : mix === "advanced" ? "Advanced class" : "Mixed levels";
+  }
+  // A Curriculum Builder rotation's phase is a fair default for the
+  // mix: early rotations teach beginners, late ones run advanced.
+  function mixForPhase(phase) {
+    var p = String(phase || "").toLowerCase();
+    if (p.indexOf("found") !== -1) return "beginner";
+    if (p.indexOf("test") !== -1 || p.indexOf("integrat") !== -1) return "advanced";
+    return "mixed";
+  }
+
+  // ---- The exact-sum allocator -------------------------------------------------
+  // Distribute `total` whole minutes across segments by weight, with
+  // per-segment floors, so the result sums EXACTLY to total. Largest
+  // remainder after floors; any leftover goes to the largest weights.
+  // Segments with weight 0 always get 0. Returns an array of ints.
+  function allocate(total, weights, floors) {
+    var n = weights.length;
+    var out = new Array(n).fill(0);
+    var active = [];
+    var floorSum = 0;
+    for (var i = 0; i < n; i++) {
+      if (weights[i] > 0) {
+        out[i] = Math.min(floors[i] || 0, total); // provisional
+        floorSum += out[i];
+        active.push(i);
+      }
+    }
+    if (!active.length) return out;
+    if (floorSum > total) {
+      // Floors alone exceed the class: scale them down by weight order,
+      // largest weight keeps its floor longest. Walk down minute by
+      // minute from the smallest-weight segment until we fit.
+      var order = active.slice().sort(function (a, b) { return weights[a] - weights[b]; });
+      var oi = 0;
+      while (floorSum > total) {
+        var idx = order[oi % order.length];
+        if (out[idx] > 0) { out[idx] -= 1; floorSum -= 1; }
+        oi += 1;
+        if (oi > 10000) break;
+      }
+      return out;
+    }
+    var rest = total - floorSum;
+    var wSum = 0;
+    active.forEach(function (i) { wSum += weights[i]; });
+    var remainders = [];
+    active.forEach(function (i) {
+      var exact = rest * (weights[i] / wSum);
+      var whole = Math.floor(exact);
+      out[i] += whole;
+      rest -= whole;
+      remainders.push({ i: i, frac: exact - whole });
+    });
+    remainders.sort(function (a, b) { return b.frac - a.frac; });
+    for (var k = 0; k < rest; k++) out[remainders[k % remainders.length].i] += 1;
+    return out;
+  }
+
+  // ---- Generation ----------------------------------------------------------------
+  var SEGMENT_KINDS = ["warmup", "technique", "partner", "live", "conditioning", "cooldown"];
+
+  // Minutes weights per level mix. Live practice is 0 for beginners
+  // (their "live" time is folded into partner drills) and conditioning
+  // drops out of very short classes — a 2-minute conditioning block
+  // is a rounding error, not training.
+  function weightsFor(total, mix) {
+    var w = {
+      beginner: { warmup: 0.13, technique: 0.42, partner: 0.30, live: 0, conditioning: 0.05, cooldown: 0.10 },
+      mixed:    { warmup: 0.11, technique: 0.35, partner: 0.24, live: 0.15, conditioning: 0.06, cooldown: 0.09 },
+      advanced: { warmup: 0.10, technique: 0.29, partner: 0.20, live: 0.25, conditioning: 0.08, cooldown: 0.08 }
+    }[mix] || { warmup: 0.11, technique: 0.35, partner: 0.24, live: 0.15, conditioning: 0.06, cooldown: 0.09 };
+    var out = {};
+    SEGMENT_KINDS.forEach(function (k) { out[k] = w[k]; });
+    if (total < 40 && mix === "beginner") out.conditioning = 0;
+    if (total < 35 && mix === "mixed") out.conditioning = 0;
+    if (total < 30) out.conditioning = 0;
+    return out;
+  }
+
+  function floorsFor(total) {
+    return {
+      warmup: total >= 30 ? 4 : 3,
+      technique: 8, partner: 5, live: 5, conditioning: 3, cooldown: 3
+    };
+  }
+
+  function makeSegment(profileId, kind, minutes, items, note, titleOverride) {
+    return {
+      id: uid(),
+      kind: kind,
+      title: cleanText(titleOverride || segmentLabel(profileId, kind), 80),
+      minutes: Math.max(0, Math.round(minutes) || 0),
+      items: (items || []).map(function (s) { return cleanText(s, 120); }).filter(Boolean),
+      note: cleanText(note || "", 280)
+    };
+  }
+
+  // Build the full timed plan. `techniques` is an array of names
+  // (strings) or { name, category } — category is preserved in the
+  // segment item text only when it adds information (the Curriculum
+  // Builder's categories read as the class's own structure).
+  function generateSegments(opts) {
+    var profileId = PROFILE_IDS.indexOf(opts.art) !== -1 ? opts.art : "general";
+    var profile = profileById(profileId);
+    var total = clampInt(opts.classMinutes, 10, 240, 45);
+    var mix = LEVEL_MIXES.indexOf(opts.levelMix) !== -1 ? opts.levelMix : "mixed";
+    var techs = (opts.techniques || []).map(function (t) {
+      if (typeof t === "string") return { name: cleanText(t, 120), category: "" };
+      return { name: cleanText(t && t.name, 120), category: cleanText(t && t.category, 80) };
+    }).filter(function (t) { return t.name; });
+
+    var weights = weightsFor(total, mix);
+    var floors = floorsFor(total);
+    var kinds = SEGMENT_KINDS.filter(function (k) { return weights[k] > 0; });
+    var minutes = allocate(total,
+      kinds.map(function (k) { return weights[k]; }),
+      kinds.map(function (k) { return floors[k]; }));
+    var byKind = {};
+    kinds.forEach(function (k, i) { byKind[k] = minutes[i]; });
+
+    var segments = [];
+    segments.push(makeSegment(profileId, "warmup", byKind.warmup || 0, [],
+      mix === "beginner" ? "Raise the temperature, move every joint, finish with the movement patterns today's techniques need."
+                         : "Raise the temperature and rehearse the movement patterns today's techniques need."));
+
+    // Technique time: two blocks once there are enough techniques to
+    // make a break worthwhile, one block otherwise.
+    var techMinutes = byKind.technique || 0;
+    if (techs.length >= 4 && techMinutes >= 16) {
+      var half = Math.ceil(techs.length / 2);
+      var first = Math.round(techMinutes / 2);
+      segments.push(makeSegment(profileId, "technique", first,
+        techs.slice(0, half).map(itemText), ""));
+      segments.push(makeSegment(profileId, "technique", techMinutes - first,
+        techs.slice(half).map(itemText), "", segmentLabel(profileId, "technique") + " — second block"));
+    } else {
+      segments.push(makeSegment(profileId, "technique", techMinutes,
+        techs.map(itemText), techs.length ? "" : "Add the techniques this class teaches."));
+    }
+
+    if (byKind.partner) {
+      segments.push(makeSegment(profileId, "partner", byKind.partner,
+        techs.map(function (t) { return t.name; }), profile.drillsNote));
+    }
+    if (byKind.live) {
+      segments.push(makeSegment(profileId, "live", byKind.live, [], profile.liveNote));
+    }
+    if (byKind.conditioning) {
+      segments.push(makeSegment(profileId, "conditioning", byKind.conditioning, [],
+        "Short and honest: the conditioning serves the art — legs, grips, core, breathing under effort."));
+    }
+    segments.push(makeSegment(profileId, "cooldown", byKind.cooldown || 0, [],
+      "Slow the breathing down, stretch what the class loaded, and say what next class builds on."));
+
+    return segments;
+
+    function itemText(t) {
+      return t.category ? t.name + " (" + t.category + ")" : t.name;
+    }
+  }
+
+  function totalMinutes(segments) {
+    return (segments || []).reduce(function (sum, s) { return sum + (Math.round(Number(s.minutes)) || 0); }, 0);
+  }
+
+  // Rescale edited segments so they sum exactly to `target`, keeping
+  // each segment's share. Zero-minute segments stay zero unless every
+  // segment is zero (then the target is split evenly). Minimum 1 for
+  // any segment that had minutes, while the total allows it.
+  function rebalance(segments, target) {
+    target = clampInt(target, 1, 600, 45);
+    var list = (segments || []).map(function (s) {
+      return { s: s, m: Math.max(0, Math.round(Number(s.minutes)) || 0) };
+    });
+    var sum = list.reduce(function (a, b) { return a + b.m; }, 0);
+    var weights, floors;
+    if (sum === 0) {
+      weights = list.map(function () { return 1; });
+      floors = list.map(function () { return 0; });
+    } else {
+      weights = list.map(function (e) { return e.m; });
+      floors = list.map(function (e) { return e.m > 0 ? 1 : 0; });
+    }
+    var mins = allocate(target, weights, floors);
+    return list.map(function (e, i) {
+      var copy = {};
+      for (var k in e.s) copy[k] = e.s[k];
+      copy.minutes = mins[i];
+      return copy;
+    });
+  }
+
+  // Cumulative clock offsets for display/print. Returns copies with
+  // `start` and `end` (minutes from class start). When startTime
+  // ("18:05") is given, also `startClock`/`endClock` ("6:05 PM").
+  function withClock(segments, startTime) {
+    var start = parseClock(startTime);
+    var t = 0;
+    return (segments || []).map(function (s) {
+      var copy = {};
+      for (var k in s) copy[k] = s[k];
+      var m = Math.max(0, Math.round(Number(s.minutes)) || 0);
+      copy.start = t;
+      copy.end = t + m;
+      if (start !== null) {
+        copy.startClock = fmtClock(start + t);
+        copy.endClock = fmtClock(start + t + m);
+      }
+      t += m;
+      return copy;
+    });
+  }
+  function parseClock(v) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(v || "").trim());
+    if (!m) return null;
+    var h = +m[1], min = +m[2];
+    if (h > 23 || min > 59) return null;
+    return h * 60 + min;
+  }
+  function fmtClock(mins) {
+    mins = ((mins % 1440) + 1440) % 1440;
+    var h24 = Math.floor(mins / 60), m = mins % 60;
+    var ap = h24 >= 12 ? "PM" : "AM";
+    var h = h24 % 12; if (h === 0) h = 12;
+    return h + ":" + (m < 10 ? "0" : "") + m + " " + ap;
+  }
+  function fmtOffset(mins) {
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return h > 0 ? h + ":" + (m < 10 ? "0" : "") + m : "0:" + (m < 10 ? "0" : "") + m;
+  }
+
+  // ---- Plans ---------------------------------------------------------------------
+  function newPlan(opts) {
+    opts = opts || {};
+    var profileId = PROFILE_IDS.indexOf(opts.art) !== -1 ? opts.art : "general";
+    var classMinutes = clampInt(opts.classMinutes, 10, 240, 45);
+    var mix = LEVEL_MIXES.indexOf(opts.levelMix) !== -1 ? opts.levelMix : "mixed";
+    var now = new Date().toISOString();
+    return {
+      id: uid(),
+      name: cleanText(opts.name || "", 90) || defaultPlanName(profileId, classMinutes),
+      art: profileId,
+      source: opts.source === "curriculum" ? "curriculum" : "standalone",
+      sourceRef: sanitizeSourceRef(opts.sourceRef),
+      classMinutes: classMinutes,
+      levelMix: mix,
+      startTime: parseClock(opts.startTime) !== null ? String(opts.startTime).trim() : "",
+      segments: generateSegments({ art: profileId, classMinutes: classMinutes, levelMix: mix, techniques: opts.techniques || [] }),
+      notes: cleanText(opts.notes || "", 600),
+      createdAt: now, updatedAt: now
+    };
+  }
+  function defaultPlanName(profileId, classMinutes) {
+    return profileLabel(profileId) + " — " + classMinutes + "-minute class";
+  }
+  function sanitizeSourceRef(ref) {
+    if (!ref || typeof ref !== "object") return null;
+    var out = {
+      curriculumId: cleanText(ref.curriculumId, 60),
+      curriculumName: cleanText(ref.curriculumName, 90),
+      lessonNumber: clampInt(ref.lessonNumber, 0, 999, 0),
+      week: clampInt(ref.week, 0, 999, 0),
+      phase: cleanText(ref.phase, 40)
+    };
+    return out.curriculumId ? out : null;
+  }
+
+  // A saved Curriculum Builder lesson becomes plan input: lesson_items
+  // carry category_name + requirement_name snapshots, which map
+  // directly onto the technique list the generator consumes.
+  function techniquesFromLessonItems(items) {
+    return (items || []).map(function (it) {
+      return {
+        name: cleanText(it && (it.requirement_name || it.requirementName), 120),
+        category: cleanText(it && (it.category_name || it.categoryName), 80)
+      };
+    }).filter(function (t) { return t.name; });
+  }
+
+  // ---- Sanitising saved state ------------------------------------------------------
+  function sanitizeSegment(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    var kind = SEGMENT_KINDS.indexOf(raw.kind) !== -1 ? raw.kind : "custom";
+    return {
+      id: cleanText(raw.id, 40) || uid(),
+      kind: kind,
+      title: cleanText(raw.title, 80) || kind,
+      minutes: clampInt(raw.minutes, 0, 600, 0),
+      items: Array.isArray(raw.items) ? raw.items.map(function (s) { return cleanText(s, 120); }).filter(Boolean).slice(0, 40) : [],
+      note: cleanText(raw.note, 280)
+    };
+  }
+  function sanitizePlan(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    var segments = Array.isArray(raw.segments) ? raw.segments.map(sanitizeSegment).filter(Boolean).slice(0, 20) : [];
+    if (!segments.length) return null;
+    return {
+      id: cleanText(raw.id, 40) || uid(),
+      name: cleanText(raw.name, 90) || "Untitled class plan",
+      art: PROFILE_IDS.indexOf(raw.art) !== -1 ? raw.art : "general",
+      source: raw.source === "curriculum" ? "curriculum" : "standalone",
+      sourceRef: sanitizeSourceRef(raw.sourceRef),
+      classMinutes: clampInt(raw.classMinutes, 10, 240, totalMinutes(segments) || 45),
+      levelMix: LEVEL_MIXES.indexOf(raw.levelMix) !== -1 ? raw.levelMix : "mixed",
+      startTime: parseClock(raw.startTime) !== null ? String(raw.startTime).trim() : "",
+      segments: segments,
+      notes: cleanText(raw.notes, 600),
+      createdAt: cleanText(raw.createdAt, 40) || new Date().toISOString(),
+      updatedAt: cleanText(raw.updatedAt, 40) || new Date().toISOString()
+    };
+  }
+  function sanitizeState(raw) {
+    var out = { v: 1, plans: [], activePlanId: null };
+    if (!raw || typeof raw !== "object") return out;
+    if (Array.isArray(raw.plans)) {
+      out.plans = raw.plans.map(sanitizePlan).filter(Boolean).slice(0, 500);
+    }
+    var ids = {};
+    out.plans.forEach(function (p) { ids[p.id] = true; });
+    out.activePlanId = raw.activePlanId && ids[raw.activePlanId] ? raw.activePlanId : (out.plans[0] ? out.plans[0].id : null);
+    return out;
+  }
+
+  // ---- Tier gating -------------------------------------------------------------------
+  var FREE_PLAN_LIMIT = 3;
+  function canCreatePlan(state, plan) {
+    return plan === "pro" || !state || !Array.isArray(state.plans) || state.plans.length < FREE_PLAN_LIMIT;
+  }
+  function canImport(plan) { return plan === "pro"; }
+  function canPrint(plan) { return plan === "pro"; }
+
+  var API = {
+    PROFILES: PROFILES, PROFILE_IDS: PROFILE_IDS,
+    LEVEL_MIXES: LEVEL_MIXES, SEGMENT_KINDS: SEGMENT_KINDS,
+    FREE_PLAN_LIMIT: FREE_PLAN_LIMIT,
+    uid: uid, cleanText: cleanText, clampInt: clampInt,
+    profileById: profileById, profileLabel: profileLabel, segmentLabel: segmentLabel,
+    mapArtText: mapArtText, levelMixLabel: levelMixLabel, mixForPhase: mixForPhase,
+    allocate: allocate, weightsFor: weightsFor,
+    generateSegments: generateSegments, totalMinutes: totalMinutes,
+    rebalance: rebalance, withClock: withClock, parseClock: parseClock, fmtClock: fmtClock, fmtOffset: fmtOffset,
+    newPlan: newPlan, defaultPlanName: defaultPlanName,
+    techniquesFromLessonItems: techniquesFromLessonItems,
+    sanitizeSegment: sanitizeSegment, sanitizePlan: sanitizePlan, sanitizeState: sanitizeState,
+    canCreatePlan: canCreatePlan, canImport: canImport, canPrint: canPrint
+  };
+  global.MMCPLogic = API;
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* =====================================================================
+   Class Plan Builder — app layer. State lives on this device in
+   localStorage ("mmcp.state.v1"); the pure plan maths live in the
+   logic block above (window.MMCPLogic). Accounts, the real plan
+   (public.profiles.plan) and the cloud copy (public.class_plans)
+   are wired by the module script below through window.MMCP.
+   ===================================================================== */
+(function () {
+  "use strict";
+  const L = window.MMCPLogic;
+  const $ = id => document.getElementById(id);
+  const LS_KEY = "mmcp.state.v1";
+  const PREFS_KEY = "mmcp.prefs.v1";
+
+  /* ---------------- prefs & plan ---------------- */
+  let prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch (e) {}
+  let demoPlan = prefs.demoPlan === "pro" ? "pro" : "free";
+  let accountPlan = null;   // set by the account module when signed in
+  let signedIn = false;
+  function effectivePlan() { return accountPlan || demoPlan; }
+  function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify({ demoPlan })); } catch (e) {} }
+
+  /* ---------------- state ---------------- */
+  let state = loadState();
+  let cloudHook = null;
+  function loadState() {
+    try { return L.sanitizeState(JSON.parse(localStorage.getItem(LS_KEY) || "null")); }
+    catch (e) { return L.sanitizeState(null); }
+  }
+  function persist(quiet) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    if (!quiet && cloudHook) cloudHook();
+  }
+  function activePlan() {
+    return state.plans.find(p => p.id === state.activePlanId) || null;
+  }
+  function touch(plan) { plan.updatedAt = new Date().toISOString(); }
+
+  function announce(msg) {
+    const el = $("srStatus"); if (el) el.textContent = msg;
+  }
+  function showProBanner(title, text) {
+    $("proBannerTitle").textContent = title;
+    $("proBannerText").textContent = text;
+    $("proBanner").classList.add("show");
+    $("proBanner").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function hideProBanner() { $("proBanner").classList.remove("show"); }
+  hideProBanner();
+
+  /* ---------------- setup panel ---------------- */
+  function renderArtOptions() {
+    const sel = $("pArt");
+    sel.innerHTML = "";
+    L.PROFILE_IDS.forEach(id => {
+      const o = document.createElement("option");
+      o.value = id; o.textContent = L.profileLabel(id);
+      sel.appendChild(o);
+    });
+    sel.value = "shotokan";
+  }
+
+  function setupTechniques() {
+    return $("techList").value.split("\n").map(s => s.trim()).filter(Boolean);
+  }
+
+  function createPlan(plan) {
+    if (!L.canCreatePlan(state, effectivePlan())) {
+      showProBanner("The Free plan saves up to " + L.FREE_PLAN_LIMIT + " class plans",
+        "You already have " + state.plans.length + " saved plans. Pro saves unlimited plans — and nothing you have made is ever deleted; the limit only applies to new plans.");
+      return false;
+    }
+    state.plans.unshift(plan);
+    state.activePlanId = plan.id;
+    persist();
+    renderAll();
+    announce("Plan created: " + plan.name);
+    return true;
+  }
+
+  $("btnBuild").addEventListener("click", () => {
+    const art = $("pArt").value;
+    const minutes = parseInt($("pMinutes").value, 10) || 45;
+    const plan = L.newPlan({
+      art, classMinutes: minutes, levelMix: $("pMix").value,
+      name: $("pName").value.trim(),
+      startTime: $("pStart").value || "",
+      techniques: setupTechniques()
+    });
+    if (createPlan(plan)) {
+      $("planPanel").scrollIntoView({ behavior: "smooth" });
+    }
+  });
+
+  /* ---------------- import (module-driven data, UI here) ---------------- */
+  let importMode = "locked-plan"; // locked-plan | locked-signin | ready | unavailable
+  function renderImport() {
+    const form = $("importForm"), locked = $("importLocked"), note = $("importLockNote");
+    if (importMode === "ready") {
+      form.classList.remove("hidden"); locked.classList.add("hidden");
+      return;
+    }
+    form.classList.add("hidden"); locked.classList.remove("hidden");
+    note.textContent =
+      importMode === "locked-plan" ? "Importing from the Curriculum Builder is a Pro feature — it is part of the same Pro plan as the Curriculum Builder itself. Standalone plans (type the techniques above) are free." :
+      importMode === "locked-signin" ? "Sign in above with the account that holds your curricula, and your rotations will appear here." :
+      "Your curricula could not be reached just now — check your connection, or build the plan standalone above.";
+  }
+  function setImportAvailability(mode) { importMode = mode; renderImport(); }
+  function importLesson(data) {
+    // data: { curriculum, lesson, items } straight from the shared tables.
+    const cur = data.curriculum || {}, lesson = data.lesson || {};
+    const art = L.mapArtText(cur.art || "");
+    const plan = L.newPlan({
+      art,
+      classMinutes: cur.class_minutes || 45,
+      levelMix: L.mixForPhase(lesson.phase),
+      name: (cur.name || "Curriculum") + " — class " + (lesson.number || ""),
+      source: "curriculum",
+      sourceRef: {
+        curriculumId: cur.id, curriculumName: cur.name,
+        lessonNumber: lesson.number, week: lesson.week, phase: lesson.phase
+      },
+      techniques: L.techniquesFromLessonItems(data.items || [])
+    });
+    if (createPlan(plan)) {
+      $("importStatus").textContent = "Imported class " + (lesson.number || "") + " of “" + (cur.name || "") + "” — " +
+        plan.segments.reduce((a, s) => a + s.items.length, 0) + " requirements placed.";
+      $("planPanel").scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  /* ---------------- editor ---------------- */
+  function renderEditor() {
+    const plan = activePlan();
+    const panel = $("planPanel");
+    if (!plan) { panel.classList.add("hidden"); return; }
+    panel.classList.remove("hidden");
+    $("planTitle").textContent = plan.name;
+    const src = plan.sourceRef
+      ? " · from “" + plan.sourceRef.curriculumName + "”, class " + plan.sourceRef.lessonNumber
+      : " · standalone";
+    $("planMeta").textContent = "— " + L.profileLabel(plan.art) + " · " + plan.classMinutes +
+      "-minute class · " + L.levelMixLabel(plan.levelMix) + src;
+    $("planNotes").value = plan.notes || "";
+    $("planName").value = plan.name;
+    renderTotal();
+    renderSegments();
+    renderSheet();
+  }
+
+  function renderTotal() {
+    const plan = activePlan(); if (!plan) return;
+    const total = L.totalMinutes(plan.segments);
+    const bar = $("totalBar");
+    bar.innerHTML = "";
+    const span = document.createElement("span");
+    if (total === plan.classMinutes) {
+      span.className = "exact";
+      span.textContent = "Segments total " + total + " of " + plan.classMinutes + " minutes — the hour adds up exactly.";
+    } else if (total < plan.classMinutes) {
+      span.textContent = "Segments total " + total + " of " + plan.classMinutes + " minutes — " + (plan.classMinutes - total) + " minutes unassigned.";
+    } else {
+      span.className = "over";
+      span.textContent = "Segments total " + total + " of " + plan.classMinutes + " minutes — " + (total - plan.classMinutes) + " minutes over. Trim a segment, or balance.";
+    }
+    bar.appendChild(span);
+  }
+
+  function renderSegments() {
+    const plan = activePlan(); if (!plan) return;
+    const list = $("segList");
+    list.innerHTML = "";
+    plan.segments.forEach((seg, idx) => {
+      const row = document.createElement("div");
+      row.className = "seg-row";
+
+      const head = document.createElement("div");
+      head.className = "seg-head";
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "seg-title";
+      const tLabel = document.createElement("label");
+      tLabel.textContent = "Segment " + (idx + 1) + " — " + (seg.kind === "custom" ? "custom" : L.segmentLabel(plan.art, seg.kind));
+      const tInput = document.createElement("input");
+      tInput.type = "text"; tInput.value = seg.title; tInput.maxLength = 80;
+      tInput.addEventListener("change", () => {
+        seg.title = L.cleanText(tInput.value, 80) || seg.title;
+        touch(plan); persist(); renderSheet();
+      });
+      titleWrap.appendChild(tLabel); titleWrap.appendChild(tInput);
+
+      const minWrap = document.createElement("div");
+      minWrap.className = "seg-min";
+      const mLabel = document.createElement("label");
+      mLabel.textContent = "Minutes";
+      const mInput = document.createElement("input");
+      mInput.type = "number"; mInput.min = "0"; mInput.max = "600"; mInput.value = seg.minutes;
+      mInput.addEventListener("change", () => {
+        seg.minutes = L.clampInt(mInput.value, 0, 600, seg.minutes);
+        mInput.value = seg.minutes;
+        touch(plan); persist(); renderTotal(); renderSheet();
+      });
+      minWrap.appendChild(mLabel); minWrap.appendChild(mInput);
+
+      const tools = document.createElement("div");
+      tools.className = "seg-tools";
+      [["↑", "Move up", () => moveSeg(idx, -1)],
+       ["↓", "Move down", () => moveSeg(idx, 1)],
+       ["✕", "Remove segment", () => removeSeg(idx)]].forEach(([glyph, label, fn]) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "btn secondary small";
+        b.textContent = glyph; b.title = label; b.setAttribute("aria-label", label);
+        b.addEventListener("click", fn);
+        tools.appendChild(b);
+      });
+      head.appendChild(titleWrap); head.appendChild(minWrap); head.appendChild(tools);
+      row.appendChild(head);
+
+      const itemsWrap = document.createElement("div");
+      itemsWrap.className = "seg-items";
+      const iLabel = document.createElement("label");
+      iLabel.textContent = "In this segment — one per line";
+      const iInput = document.createElement("textarea");
+      iInput.rows = Math.max(2, Math.min(6, seg.items.length + 1));
+      iInput.value = seg.items.join("\n");
+      iInput.addEventListener("change", () => {
+        seg.items = iInput.value.split("\n").map(s => L.cleanText(s, 120)).filter(Boolean).slice(0, 40);
+        touch(plan); persist(); renderSheet();
+      });
+      itemsWrap.appendChild(iLabel); itemsWrap.appendChild(iInput);
+      row.appendChild(itemsWrap);
+
+      const noteWrap = document.createElement("div");
+      noteWrap.className = "seg-note";
+      const nInput = document.createElement("input");
+      nInput.type = "text"; nInput.value = seg.note || ""; nInput.maxLength = 280;
+      nInput.placeholder = "Coaching note for this segment (optional)";
+      nInput.setAttribute("aria-label", "Coaching note for segment " + (idx + 1));
+      nInput.addEventListener("change", () => {
+        seg.note = L.cleanText(nInput.value, 280);
+        touch(plan); persist(); renderSheet();
+      });
+      noteWrap.appendChild(nInput);
+      row.appendChild(noteWrap);
+
+      list.appendChild(row);
+    });
+  }
+
+  function moveSeg(idx, dir) {
+    const plan = activePlan(); if (!plan) return;
+    const j = idx + dir;
+    if (j < 0 || j >= plan.segments.length) return;
+    const tmp = plan.segments[idx];
+    plan.segments[idx] = plan.segments[j];
+    plan.segments[j] = tmp;
+    touch(plan); persist(); renderSegments(); renderSheet();
+  }
+  function removeSeg(idx) {
+    const plan = activePlan(); if (!plan) return;
+    if (plan.segments.length <= 1) { announce("A plan needs at least one segment."); return; }
+    plan.segments.splice(idx, 1);
+    touch(plan); persist(); renderSegments(); renderTotal(); renderSheet();
+  }
+
+  $("btnAddSeg").addEventListener("click", () => {
+    const plan = activePlan(); if (!plan) return;
+    const kind = $("addKind").value;
+    const seg = L.sanitizeSegment({
+      kind, title: kind === "custom" ? "Custom segment" : L.segmentLabel(plan.art, kind),
+      minutes: 5, items: [], note: ""
+    });
+    plan.segments.push(seg);
+    touch(plan); persist(); renderSegments(); renderTotal(); renderSheet();
+  });
+  $("btnBalance").addEventListener("click", () => {
+    const plan = activePlan(); if (!plan) return;
+    plan.segments = L.rebalance(plan.segments, plan.classMinutes);
+    touch(plan); persist(); renderSegments(); renderTotal(); renderSheet();
+    announce("Minutes balanced to " + plan.classMinutes + ".");
+  });
+  $("btnPrint").addEventListener("click", () => {
+    if (!L.canPrint(effectivePlan())) {
+      showProBanner("Printing is a Pro feature",
+        "The printed sheet — the one you carry onto the mat — comes with Pro, along with unlimited plans and Curriculum Builder import. The plan itself stays fully editable on screen either way.");
+      return;
+    }
+    renderSheet();
+    window.print();
+  });
+  $("btnDupPlan").addEventListener("click", () => {
+    const plan = activePlan(); if (!plan) return;
+    const copy = L.sanitizePlan(JSON.parse(JSON.stringify(plan)));
+    copy.id = L.uid();
+    copy.name = (plan.name + " (copy)").slice(0, 90);
+    copy.createdAt = new Date().toISOString();
+    if (createPlan(copy)) $("planPanel").scrollIntoView({ behavior: "smooth" });
+  });
+  $("btnDelPlan").addEventListener("click", () => {
+    const plan = activePlan(); if (!plan) return;
+    state.plans = state.plans.filter(p => p.id !== plan.id);
+    state.activePlanId = state.plans[0] ? state.plans[0].id : null;
+    persist(); renderAll();
+    announce("Plan deleted: " + plan.name);
+  });
+  $("planName").addEventListener("change", () => {
+    const plan = activePlan(); if (!plan) return;
+    plan.name = L.cleanText($("planName").value, 90) || plan.name;
+    $("planName").value = plan.name;
+    touch(plan); persist(); renderSaved(); renderEditor();
+  });
+  $("planNotes").addEventListener("change", () => {
+    const plan = activePlan(); if (!plan) return;
+    plan.notes = L.cleanText($("planNotes").value, 600);
+    touch(plan); persist(); renderSheet();
+  });
+
+  /* ---------------- print sheet ---------------- */
+  function renderSheet() {
+    const plan = activePlan();
+    const sheet = $("sheet");
+    sheet.innerHTML = "";
+    if (!plan) return;
+    const h = document.createElement("h1");
+    h.textContent = plan.name;
+    sheet.appendChild(h);
+    const meta = document.createElement("p");
+    meta.className = "meta";
+    meta.textContent = L.profileLabel(plan.art) + " · " + plan.classMinutes + "-minute class · " +
+      L.levelMixLabel(plan.levelMix) + " · " + new Date().toLocaleDateString(undefined,
+        { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    sheet.appendChild(meta);
+    if (plan.sourceRef) {
+      const src = document.createElement("p");
+      src.className = "source";
+      src.textContent = "From the Curriculum Builder: “" + plan.sourceRef.curriculumName + "” — class " +
+        plan.sourceRef.lessonNumber + (plan.sourceRef.week ? ", week " + plan.sourceRef.week : "") +
+        (plan.sourceRef.phase ? " (" + plan.sourceRef.phase + ")" : "");
+      sheet.appendChild(src);
+    }
+    const table = document.createElement("table");
+    const thead = document.createElement("tr");
+    ["Time", "Segment", "Min", "What happens"].forEach(t => {
+      const th = document.createElement("th"); th.textContent = t; thead.appendChild(th);
+    });
+    table.appendChild(thead);
+    L.withClock(plan.segments, plan.startTime).forEach(seg => {
+      if (seg.minutes === 0) return;
+      const tr = document.createElement("tr");
+      const time = document.createElement("td");
+      time.className = "time";
+      time.textContent = seg.startClock ? seg.startClock + " – " + seg.endClock
+                                       : L.fmtOffset(seg.start) + " – " + L.fmtOffset(seg.end);
+      const name = document.createElement("td");
+      name.className = "seg-name"; name.textContent = seg.title;
+      const mins = document.createElement("td");
+      mins.className = "mins"; mins.textContent = seg.minutes;
+      const what = document.createElement("td");
+      if (seg.items.length) {
+        const ul = document.createElement("ul");
+        seg.items.forEach(it => {
+          const li = document.createElement("li"); li.textContent = it; ul.appendChild(li);
+        });
+        what.appendChild(ul);
+      }
+      if (seg.note) {
+        const d = document.createElement("div");
+        d.className = "seg-note"; d.textContent = seg.note;
+        what.appendChild(d);
+      }
+      tr.appendChild(time); tr.appendChild(name); tr.appendChild(mins); tr.appendChild(what);
+      table.appendChild(tr);
+    });
+    sheet.appendChild(table);
+    if (plan.notes) {
+      const n = document.createElement("div");
+      n.className = "notes";
+      const strong = document.createElement("strong");
+      strong.textContent = "Class notes: ";
+      n.appendChild(strong);
+      n.appendChild(document.createTextNode(plan.notes));
+      sheet.appendChild(n);
+    }
+    const foot = document.createElement("p");
+    foot.className = "foot";
+    foot.textContent = "Built with the Mat Manual Class Plan Builder — classplan.matmanual.com. A plan organises the hour; the teaching is yours.";
+    sheet.appendChild(foot);
+  }
+
+  /* ---------------- saved plans ---------------- */
+  function renderSaved() {
+    const list = $("savedList");
+    list.innerHTML = "";
+    if (!state.plans.length) {
+      const p = document.createElement("p");
+      p.className = "empty-note";
+      p.textContent = "No plans yet. Set the class above, add the techniques, and build the first one.";
+      list.appendChild(p);
+    }
+    state.plans.forEach(plan => {
+      const row = document.createElement("div");
+      row.className = "plan-row";
+      const name = document.createElement("strong");
+      name.textContent = plan.name + (plan.id === state.activePlanId ? " · open" : "");
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = L.profileLabel(plan.art) + " · " + plan.classMinutes + " min · " +
+        L.levelMixLabel(plan.levelMix) + " · " + L.totalMinutes(plan.segments) + " min planned · " +
+        (plan.source === "curriculum" ? "imported from the Curriculum Builder" : "standalone");
+      const tools = document.createElement("div");
+      tools.className = "row"; tools.style.marginTop = ".45rem";
+      const open = document.createElement("button");
+      open.type = "button"; open.className = "btn secondary small"; open.textContent = "Open";
+      open.addEventListener("click", () => {
+        state.activePlanId = plan.id;
+        persist(true); renderAll();
+        $("planPanel").scrollIntoView({ behavior: "smooth" });
+      });
+      const del = document.createElement("button");
+      del.type = "button"; del.className = "btn secondary small danger"; del.textContent = "Delete";
+      del.addEventListener("click", () => {
+        state.plans = state.plans.filter(p => p.id !== plan.id);
+        if (state.activePlanId === plan.id) state.activePlanId = state.plans[0] ? state.plans[0].id : null;
+        persist(); renderAll();
+      });
+      tools.appendChild(open); tools.appendChild(del);
+      row.appendChild(name); row.appendChild(meta); row.appendChild(tools);
+      list.appendChild(row);
+    });
+    const cap = $("capNote");
+    if (effectivePlan() === "pro") {
+      cap.textContent = "Pro plan: unlimited saved plans, Curriculum Builder import, and printing.";
+    } else {
+      cap.textContent = "Free plan: up to " + L.FREE_PLAN_LIMIT + " saved plans (" + state.plans.length +
+        " saved), standalone mode, on-screen. Pro adds unlimited plans, Curriculum Builder import, and printing. " +
+        "Nothing is ever deleted if a plan changes — the limits only apply to new plans.";
+    }
+  }
+
+  /* ---------------- plan toggle (demo) ---------------- */
+  function renderPlanToggle() {
+    const isPro = effectivePlan() === "pro";
+    $("planFree").classList.toggle("active", !isPro);
+    $("planPro").classList.toggle("active", isPro);
+    $("planFree").setAttribute("aria-pressed", String(!isPro));
+    $("planPro").setAttribute("aria-pressed", String(isPro));
+    $("planToggle").style.display = signedIn ? "none" : "";
+  }
+  $("planFree").addEventListener("click", () => { demoPlan = "free"; savePrefs(); renderAll(); refreshImportMode(); });
+  $("planPro").addEventListener("click", () => { demoPlan = "pro"; savePrefs(); renderAll(); refreshImportMode(); });
+  $("proUpgrade").addEventListener("click", () => {
+    demoPlan = "pro"; savePrefs(); hideProBanner(); renderAll(); refreshImportMode();
+  });
+  $("proDismiss").addEventListener("click", hideProBanner);
+
+  function refreshImportMode() {
+    if (window.MMCPCloud && window.MMCPCloud.refreshImportMode) window.MMCPCloud.refreshImportMode();
+    else setImportAvailability(effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
+  }
+
+  function renderAll() {
+    renderPlanToggle();
+    renderSaved();
+    renderEditor();
+    renderImport();
+  }
+
+  /* ---------------- account module interface ---------------- */
+  window.MMCP = {
+    getState() { return state; },
+    adoptState(raw) {
+      state = L.sanitizeState(raw);
+      persist(true);
+      renderAll();
+    },
+    applyPlanFromAccount(plan) {
+      accountPlan = plan === "pro" ? "pro" : "free";
+      signedIn = true;
+      renderAll();
+    },
+    applySignedOut() {
+      accountPlan = null;
+      signedIn = false;
+      renderAll();
+    },
+    setCloudHook(fn) { cloudHook = fn; },
+    setImportAvailability,
+    importLesson,
+    isSignedIn() { return signedIn; },
+    effectivePlan
+  };
+
+  renderArtOptions();
+  renderAll();
+  refreshImportMode();
+})();
+</script>
+
+<script type="module">
+/* =====================================================================
+   Supabase integration — auth, real plan (profiles.plan), cloud copy
+   in public.class_plans, and the Curriculum Builder import (the
+   user's own public.curricula / lessons / lesson_items rows). Same
+   shared project as every Mat Manual tool (rsnttmawjayytoidompx):
+   shared users, shared profiles.plan, one Pro unlock. The
+   publishable key is public by design; every table touched here is
+   protected by owner-only RLS.
+   FAIL-SOFT: if the CDN import fails, the visitor is signed out, or
+   supabase/schema.sql has not been applied yet, the app keeps
+   working locally and says so in plain words.
+   ===================================================================== */
+const SUPABASE_URL = "https://rsnttmawjayytoidompx.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5rVKwGEqanbhHo__BRZl8A_6FYjLjAr";
+const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const $m = id => document.getElementById(id);
+const M = window.MMCP || null;
+let sb = null;
+let currentUser = null;
+let plansTableMissing = false;
+let saveTimer = null;
+let curriculaCache = [];
+let lessonsCache = [];
+
+function acctStatus(msg, kind){
+  const el = $m("acctStatus"); if (!el) return;
+  el.textContent = msg || "";
+  el.className = "muted-note" + (kind === "err" ? " status-err" : kind === "ok" ? " status-ok" : "");
+}
+function cloudStatus(msg, kind){
+  const el = $m("cloudStatus"); if (!el) return;
+  el.textContent = msg || "";
+  el.className = "muted-note" + (kind === "err" ? " status-err" : kind === "ok" ? " status-ok" : "");
+}
+function importStatus(msg){
+  const el = $m("importStatus"); if (el) el.textContent = msg || "";
+}
+function must(res, what){
+  if (res && res.error) throw new Error(what + ": " + res.error.message);
+  return res ? res.data : null;
+}
+function missingFor(table){
+  return err => !!err && new RegExp(table).test(err.message || "") &&
+    /does not exist|schema cache|not found/i.test(err.message || "");
+}
+const plansMissing = missingFor("class_plans");
+
+/* ---------------- Cloud copy (public.class_plans) ---------------- */
+async function cloudSave(quiet){
+  if (!sb || !currentUser || plansTableMissing || !M) return;
+  try {
+    const payload = M.getState();
+    const res = await sb.from("class_plans")
+      .upsert({ owner_id: currentUser.id, payload: payload, updated_at: new Date().toISOString() },
+              { onConflict: "owner_id" });
+    if (res.error) throw res.error;
+    if (!quiet) cloudStatus("Saved to your account just now.", "ok");
+  } catch (e) {
+    if (plansMissing(e)){
+      plansTableMissing = true;
+      cloudStatus("Cloud backup isn't switched on for this tool yet — your class plans are safe on this device.", "err");
+    } else if (!quiet) {
+      cloudStatus("Cloud save failed: " + e.message + " — your class plans are safe on this device.", "err");
+    }
+  }
+}
+async function cloudLoad(){
+  if (!sb || !currentUser || !M) return false;
+  try {
+    const data = must(await sb.from("class_plans")
+      .select("payload").eq("owner_id", currentUser.id).maybeSingle(),
+      "Could not read your cloud copy");
+    if (data && data.payload){
+      M.adoptState(data.payload);
+      cloudStatus("Loaded your class plans from your account.", "ok");
+      return true;
+    }
+    return false;
+  } catch (e) {
+    if (plansMissing(e)){
+      plansTableMissing = true;
+      cloudStatus("Cloud backup isn't switched on for this tool yet — your class plans are safe on this device.", "err");
+    } else {
+      cloudStatus("Cloud load failed: " + e.message, "err");
+    }
+    return false;
+  }
+}
+
+/* ---------------- Curriculum Builder import ---------------- */
+async function refreshImportMode(){
+  if (!M) return;
+  if (!sb || !currentUser){ M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan"); return; }
+  if (M.effectivePlan() !== "pro"){ M.setImportAvailability("locked-plan"); return; }
+  try {
+    curriculaCache = must(await sb.from("curricula")
+      .select("id,name,art,class_minutes,weeks,classes_per_week,grading_final_class")
+      .eq("owner_id", currentUser.id).order("updated_at", { ascending: false }),
+      "Could not read your curricula") || [];
+    const sel = $m("impCurriculum");
+    sel.innerHTML = "";
+    if (!curriculaCache.length){
+      const o = document.createElement("option");
+      o.value = ""; o.textContent = "No curricula saved yet — create one in the Curriculum Builder first";
+      sel.appendChild(o);
+      $m("impLesson").innerHTML = "";
+      importStatus("");
+    } else {
+      curriculaCache.forEach(c => {
+        const o = document.createElement("option");
+        o.value = c.id; o.textContent = c.name + (c.art ? " (" + c.art + ")" : "");
+        sel.appendChild(o);
+      });
+      await loadLessons(sel.value);
+    }
+    M.setImportAvailability("ready");
+  } catch (e) {
+    M.setImportAvailability("unavailable");
+    importStatus("Import is unavailable just now: " + e.message);
+  }
+}
+async function loadLessons(curriculumId){
+  lessonsCache = [];
+  const sel = $m("impLesson");
+  sel.innerHTML = "";
+  if (!curriculumId) return;
+  lessonsCache = must(await sb.from("lessons")
+    .select("id,number,week,phase,is_grading")
+    .eq("curriculum_id", curriculumId).order("number", { ascending: true }),
+    "Could not read the rotation") || [];
+  if (!lessonsCache.length){
+    const o = document.createElement("option");
+    o.value = ""; o.textContent = "No saved rotation yet — generate it in the Curriculum Builder first";
+    sel.appendChild(o);
+    return;
+  }
+  lessonsCache.forEach(l => {
+    const o = document.createElement("option");
+    o.value = l.id;
+    o.textContent = "Class " + l.number + " — week " + l.week + " (" + l.phase + ")" + (l.is_grading ? " · grading" : "");
+    sel.appendChild(o);
+  });
+}
+async function doImport(){
+  if (!M || !sb || !currentUser) return;
+  const cur = curriculaCache.find(c => c.id === $m("impCurriculum").value);
+  const lesson = lessonsCache.find(l => l.id === $m("impLesson").value);
+  if (!cur || !lesson){
+    importStatus("Pick a curriculum with a saved rotation first.");
+    return;
+  }
+  try {
+    const items = must(await sb.from("lesson_items")
+      .select("category_name,requirement_name,level,sort_order")
+      .eq("lesson_id", lesson.id).order("sort_order", { ascending: true }),
+      "Could not read that class") || [];
+    if (!items.length){
+      importStatus("That class has no requirements saved in the rotation — pick another class, or build the plan standalone.");
+      return;
+    }
+    M.importLesson({ curriculum: cur, lesson, items });
+  } catch (e) {
+    importStatus("Import failed: " + e.message);
+  }
+}
+window.MMCPCloud = { refreshImportMode };
+
+/* ---------------- Auth & plan ---------------- */
+async function fetchPlan(userId){
+  const data = must(await sb.from("profiles").select("plan").eq("id", userId).single(),
+    "Could not read your plan");
+  return data && data.plan === "pro" ? "pro" : "free";
+}
+async function handleSession(session){
+  currentUser = session && session.user ? session.user : null;
+  if (!M) return;
+  if (!currentUser){
+    $m("acctSignedOut").style.display = "";
+    $m("acctSignedIn").style.display = "none";
+    M.applySignedOut();
+    refreshImportMode();
+    return;
+  }
+  $m("acctSignedOut").style.display = "none";
+  $m("acctSignedIn").style.display = "";
+  $m("acctUserEmail").textContent = currentUser.email || "";
+  let plan = "free";
+  try { plan = await fetchPlan(currentUser.id); }
+  catch (e) { acctStatus(e.message + " — defaulting to the Free plan.", "err"); }
+  M.applyPlanFromAccount(plan);
+  const badge = $m("acctPlanBadge");
+  badge.textContent = plan === "pro" ? "Pro plan" : "Free plan";
+  badge.classList.toggle("pro", plan === "pro");
+  // The cloud copy wins when there is one; when there is none, back
+  // this device's plans up so nothing local is ever lost.
+  const had = await cloudLoad();
+  if (!had && M.getState().plans.length){
+    await cloudSave(true);
+    if (!plansTableMissing) cloudStatus("This device's class plans were saved to your account.", "ok");
+  }
+  refreshImportMode();
+}
+async function doSignIn(){
+  const email = $m("acctEmail").value.trim();
+  const password = $m("acctPassword").value;
+  if (!email || !password){ acctStatus("Enter your email and password.", "err"); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) acctStatus("Sign-in failed: " + error.message, "err");
+  else acctStatus("", "");
+}
+async function doSignUp(){
+  const email = $m("acctEmail").value.trim();
+  const password = $m("acctPassword").value;
+  if (!email || !password){ acctStatus("Enter an email and a password (at least 10 characters, with letters and digits).", "err"); return; }
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname }
+  });
+  if (error){ acctStatus("Account creation failed: " + error.message, "err"); return; }
+  if (data && data.session) acctStatus("Account created and signed in.", "ok");
+  else acctStatus("Account created — check your email for the confirmation link, then sign in.", "ok");
+}
+async function doSignOut(){
+  await sb.auth.signOut();
+  acctStatus("Signed out. Your class plans are still on this device.", "ok");
+}
+
+$m("btnSignIn").addEventListener("click", doSignIn);
+$m("btnSignUp").addEventListener("click", doSignUp);
+$m("btnSignOut").addEventListener("click", doSignOut);
+$m("btnCloudSave").addEventListener("click", () => cloudSave(false));
+$m("btnCloudLoad").addEventListener("click", () => cloudLoad());
+$m("impCurriculum").addEventListener("change", e => { loadLessons(e.target.value).catch(err => importStatus("Could not read the rotation: " + err.message)); });
+$m("btnImport").addEventListener("click", doImport);
+if (M) M.setCloudHook(() => {
+  if (!currentUser || plansTableMissing) return;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => cloudSave(true), 1200);
+});
+
+(async function initSupabase(){
+  try {
+    const mod = await import(SUPABASE_CDN);
+    sb = mod.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  } catch (e) {
+    acctStatus("Accounts are unavailable right now — everything still works on this device.", "err");
+    if (M) M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
+    return;
+  }
+  sb.auth.onAuthStateChange((_event, session) => { handleSession(session); });
+  const { data } = await sb.auth.getSession();
+  await handleSession(data.session);
+})();
+</script>
+</body>
+</html>
