@@ -1538,6 +1538,72 @@ const SUPABASE_URL = "https://rsnttmawjayytoidompx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_5rVKwGEqanbhHo__BRZl8A_6FYjLjAr";
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+/* Mat Manual shared sign-in cookie — identical in every app; change everywhere or nowhere.
+   The Supabase session lives in chunked cookies on .matmanual.com instead of
+   this subdomain's localStorage, so one sign-in covers the website and every
+   tool. Cookie values are URI-encoded, then split into <=3000-char chunks
+   named <key>.0, <key>.1, ... with the count in <key>.chunks. */
+const MM_AUTH_STORAGE = (() => {
+  const CHUNK_SIZE = 3000;
+  const MAX_AGE = 34560000; // 400 days, the longest browsers honour.
+  function cookieAttrs(){
+    let attrs = "; Path=/; SameSite=Lax";
+    const host = window.location.hostname;
+    if (host === "matmanual.com" || host.endsWith(".matmanual.com")) attrs += "; Domain=.matmanual.com";
+    if (window.location.protocol === "https:") attrs += "; Secure";
+    return attrs;
+  }
+  function readCookies(){
+    const jar = {};
+    if (!document.cookie) return jar;
+    document.cookie.split("; ").forEach(pair => {
+      const eq = pair.indexOf("=");
+      if (eq > 0) jar[pair.slice(0, eq)] = pair.slice(eq + 1);
+    });
+    return jar;
+  }
+  function writeCookie(name, value, maxAge){
+    document.cookie = name + "=" + value + cookieAttrs() + "; Max-Age=" + maxAge;
+  }
+  function chunkCount(jar, key){
+    const n = parseInt(jar[key + ".chunks"] || "", 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+  return {
+    getItem(key){
+      const jar = readCookies();
+      const count = chunkCount(jar, key);
+      if (!count) return null;
+      let joined = "";
+      for (let i = 0; i < count; i++){
+        const part = jar[key + "." + i];
+        if (part === undefined) return null;
+        joined += part;
+      }
+      try { return decodeURIComponent(joined); } catch (e) { return null; }
+    },
+    setItem(key, value){
+      const encoded = encodeURIComponent(String(value));
+      const count = Math.max(1, Math.ceil(encoded.length / CHUNK_SIZE));
+      const previous = chunkCount(readCookies(), key);
+      for (let i = count; i < previous; i++) writeCookie(key + "." + i, "", 0);
+      for (let i = 0; i < count; i++){
+        writeCookie(key + "." + i, encoded.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE), MAX_AGE);
+      }
+      writeCookie(key + ".chunks", String(count), MAX_AGE);
+    },
+    removeItem(key){
+      // Expire the count cookie and every chunk actually present, by name:
+      // probing also clears strays left beyond (or between) counted chunks.
+      for (const name of Object.keys(readCookies())){
+        if (name === key + ".chunks") writeCookie(name, "", 0);
+        else if (name.startsWith(key + ".") && /^\d+$/.test(name.slice(key.length + 1))) writeCookie(name, "", 0);
+      }
+    }
+  };
+})();
+const MM_AUTH_OPTIONS = { storage: MM_AUTH_STORAGE, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true };
+
 const $m = id => document.getElementById(id);
 const M = window.MMCP || null;
 let sb = null;
@@ -1766,7 +1832,7 @@ if (M) M.setCloudHook(() => {
 (async function initSupabase(){
   try {
     const mod = await import(SUPABASE_CDN);
-    sb = mod.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    sb = mod.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: MM_AUTH_OPTIONS });
   } catch (e) {
     acctStatus("Accounts are unavailable right now — everything still works on this device.", "err");
     if (M) M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
