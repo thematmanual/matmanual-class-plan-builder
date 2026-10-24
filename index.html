@@ -74,14 +74,6 @@
     padding:10px 2px;white-space:nowrap;
   }
   .bar-links a:hover{color:var(--mint);text-decoration:none}
-  header .plan{display:flex;background:var(--charcoal-deep);border:1px solid #454c50;border-radius:999px;padding:3px}
-  header .plan button{
-    border:0;background:transparent;color:#aeb6ba;padding:.42rem 1.05rem;border-radius:999px;cursor:pointer;
-    font-family:var(--sans);font-size:.82rem;font-weight:600;letter-spacing:.03em;min-height:34px;
-  }
-  header .plan button.active{background:var(--mint);color:var(--ink)}
-  #planToggle.hidden{display:none}
-
   /* ---------- Layout & page head ---------- */
   main{max-width:1160px;margin:0 auto;padding:0 32px 8px}
   .page-head{padding:40px 0 4px;max-width:880px}
@@ -341,10 +333,6 @@
     <span class="brand-name">MAT MANUAL<small>CLASS PLAN BUILDER</small></span>
   </a>
   <div class="bar-right">
-    <div class="plan" id="planToggle" role="group" aria-label="Plan">
-      <button id="planFree" class="active" aria-pressed="true">Free</button>
-      <button id="planPro" aria-pressed="false">Pro</button>
-    </div>
     <nav class="bar-links" aria-label="Mat Manual">
       <a href="https://matmanual.com">← Mat Manual</a>
       <a href="https://matmanual.com/tools/">Tools</a>
@@ -368,7 +356,6 @@
     <strong id="proBannerTitle">Unlock with Pro</strong>
     <p id="proBannerText" style="margin:.4rem 0 .9rem"></p>
     <div class="row">
-      <button class="btn" id="proUpgrade">Switch to Pro (demo — Stripe unlock in production)</button>
       <button class="btn secondary" id="proDismiss">Not now</button>
     </div>
   </div>
@@ -1062,16 +1049,15 @@
   const L = window.MMCPLogic;
   const $ = id => document.getElementById(id);
   const LS_KEY = "mmcp.state.v1";
-  const PREFS_KEY = "mmcp.prefs.v1";
 
-  /* ---------------- prefs & plan ---------------- */
-  let prefs = {};
-  try { prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch (e) {}
-  let demoPlan = prefs.demoPlan === "pro" ? "pro" : "free";
-  let accountPlan = null;   // set by the account module when signed in
+  /* ---------------- plan ---------------- */
+  // Entitlement comes only from the signed-in account's
+  // profiles.plan, applied through applyPlanFromAccount below.
+  // Signed-out visitors are always on the Free plan, and no
+  // on-device preference can grant Pro.
+  let accountPlan = "free";
   let signedIn = false;
-  function effectivePlan() { return accountPlan || demoPlan; }
-  function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify({ demoPlan })); } catch (e) {} }
+  function effectivePlan() { return accountPlan; }
 
   /* ---------------- state ---------------- */
   let state = loadState();
@@ -1490,20 +1476,7 @@
     }
   }
 
-  /* ---------------- plan toggle (demo) ---------------- */
-  function renderPlanToggle() {
-    const isPro = effectivePlan() === "pro";
-    $("planFree").classList.toggle("active", !isPro);
-    $("planPro").classList.toggle("active", isPro);
-    $("planFree").setAttribute("aria-pressed", String(!isPro));
-    $("planPro").setAttribute("aria-pressed", String(isPro));
-    $("planToggle").style.display = signedIn ? "none" : "";
-  }
-  $("planFree").addEventListener("click", () => { demoPlan = "free"; savePrefs(); renderAll(); refreshImportMode(); });
-  $("planPro").addEventListener("click", () => { demoPlan = "pro"; savePrefs(); renderAll(); refreshImportMode(); });
-  $("proUpgrade").addEventListener("click", () => {
-    demoPlan = "pro"; savePrefs(); hideProBanner(); renderAll(); refreshImportMode();
-  });
+  /* ---------------- pro banner ---------------- */
   $("proDismiss").addEventListener("click", hideProBanner);
 
   function refreshImportMode() {
@@ -1512,7 +1485,6 @@
   }
 
   function renderAll() {
-    renderPlanToggle();
     renderSaved();
     renderEditor();
     renderImport();
@@ -1532,7 +1504,7 @@
       renderAll();
     },
     applySignedOut() {
-      accountPlan = null;
+      accountPlan = "free";
       signedIn = false;
       renderAll();
     },
