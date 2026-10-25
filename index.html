@@ -1522,6 +1522,7 @@
 })();
 </script>
 
+<script src="./mm-idle.js"></script>
 <script type="module">
 /* =====================================================================
    Supabase integration — auth, real plan (profiles.plan), cloud copy
@@ -1766,6 +1767,13 @@ async function fetchPlan(userId){
 async function handleSession(session){
   currentUser = session && session.user ? session.user : null;
   if (!M) return;
+  // Idle sign-out (shared mm-idle.js): the warning at 55 idle minutes,
+  // then this app's own doSignOut at 60 — which clears the shared
+  // session on every surface. Activity in any tab counts.
+  if (window.MM_IDLE){
+    if (session && session.user) MM_IDLE.start(doSignOut);
+    else MM_IDLE.stop();
+  }
   if (!currentUser){
     $m("acctSignedOut").style.display = "";
     $m("acctSignedIn").style.display = "none";

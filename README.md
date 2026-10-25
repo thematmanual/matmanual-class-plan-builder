@@ -93,3 +93,16 @@ onto the mat.
   the runbook's default posture for every tool.
 - No automatic technique content: the plan organises the instructor's
   own techniques; it does not invent a syllabus.
+
+## Idle sign-out (2026-10-25)
+
+This app carries the shared idle watcher: `mm-idle.js` at the repo
+root, a byte-identical copy of the canonical module in
+`~/workspace/matmanual/mm-idle.js` (change it there, re-copy
+everywhere, never edit a copy in place). While signed in, 55 idle
+minutes bring the "Still there?" warning and 60 sign the user out
+through this app's own sign-out, which clears the shared session on
+every Mat Manual surface. Mouse, keyboard, touch, and scroll all
+count as activity, and activity in any tab counts (shared
+localStorage stamp). Design and verification notes:
+`~/workspace/matmanual/idle-signout.md`.
