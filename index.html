@@ -379,7 +379,7 @@
         <button class="btn" id="btnSignIn">Sign in</button>
         <button class="btn secondary" id="btnSignUp">Create account</button>
       </div>
-      <p class="muted-note" style="margin-top:.6rem">One Mat Manual account works in every tool, and one Pro plan unlocks them all. New accounts need a password of at least 10 characters with letters and digits.</p>
+      <p class="muted-note" style="margin-top:.6rem">One Mat Manual account works in every tool, and this tool's paid side comes with the Pro Instructor plan. New accounts need a password of at least 10 characters with letters and digits.</p>
     </div>
     <div id="acctSignedIn" style="display:none">
       <p style="margin:.2rem 0 .6rem">Signed in as <strong id="acctUserEmail"></strong> <span class="badge" id="acctPlanBadge">Free plan</span></p>
@@ -552,11 +552,12 @@
  * and prints.
  *
  * TIERS (app layer, mirroring the sibling tools; RLS enforces
- * ownership only): Free = up to 3 saved plans, standalone mode
- * only, on-screen. Pro = unlimited plans, Curriculum Builder
- * import, and printing. A downgrade deletes nothing — the caps
- * only block creating NEW plans, and plans already saved stay
- * fully usable.
+ * ownership only): this is an instructor tool — Free = up to 3
+ * saved plans, standalone mode only, on-screen, and a student Pro
+ * account gets exactly that same free tier here. Pro Instructor =
+ * unlimited plans, Curriculum Builder import, and printing. A
+ * downgrade deletes nothing — the caps only block creating NEW
+ * plans, and plans already saved stay fully usable.
  */
 (function (global) {
   "use strict";
@@ -1012,10 +1013,10 @@
   // ---- Tier gating -------------------------------------------------------------------
   var FREE_PLAN_LIMIT = 3;
   function canCreatePlan(state, plan) {
-    return plan === "pro" || !state || !Array.isArray(state.plans) || state.plans.length < FREE_PLAN_LIMIT;
+    return plan === "instructor" || !state || !Array.isArray(state.plans) || state.plans.length < FREE_PLAN_LIMIT;
   }
-  function canImport(plan) { return plan === "pro"; }
-  function canPrint(plan) { return plan === "pro"; }
+  function canImport(plan) { return plan === "instructor"; }
+  function canPrint(plan) { return plan === "instructor"; }
 
   var API = {
     PROFILES: PROFILES, PROFILE_IDS: PROFILE_IDS,
@@ -1106,7 +1107,7 @@
   function createPlan(plan) {
     if (!L.canCreatePlan(state, effectivePlan())) {
       showProBanner("The Free plan saves up to " + L.FREE_PLAN_LIMIT + " class plans",
-        "You already have " + state.plans.length + " saved plans. Pro saves unlimited plans — and nothing you've made is ever deleted; the limit only applies to new plans.");
+        "You already have " + state.plans.length + " saved plans. Pro Instructor saves unlimited plans — and nothing you've made is ever deleted; the limit only applies to new plans.");
       return false;
     }
     state.plans.unshift(plan);
@@ -1141,7 +1142,7 @@
     }
     form.classList.add("hidden"); locked.classList.remove("hidden");
     note.textContent =
-      importMode === "locked-plan" ? "Importing from the Curriculum Builder is a Pro feature — it's part of the same Pro plan as the Curriculum Builder itself. Standalone plans (type the techniques above) are free." :
+      importMode === "locked-plan" ? "Importing from the Curriculum Builder is a Pro Instructor feature — it's part of the same Pro Instructor plan as the Curriculum Builder itself. Standalone plans (type the techniques above) are free." :
       importMode === "locked-signin" ? "Sign in above with the account that holds your curricula, and your rotations will appear here." :
       "Your curricula couldn't be reached just now — check your connection, or build the plan standalone above.";
   }
@@ -1320,8 +1321,8 @@
   });
   $("btnPrint").addEventListener("click", () => {
     if (!L.canPrint(effectivePlan())) {
-      showProBanner("Printing is a Pro feature",
-        "The printed sheet — the one you carry onto the mat — comes with Pro, along with unlimited plans and Curriculum Builder import. The plan itself stays fully editable on screen either way.");
+      showProBanner("Printing is a Pro Instructor feature",
+        "The printed sheet — the one you carry onto the mat — comes with Pro Instructor, along with unlimited plans and Curriculum Builder import. The plan itself stays fully editable on screen either way.");
       return;
     }
     renderSheet();
@@ -1467,11 +1468,11 @@
       list.appendChild(row);
     });
     const cap = $("capNote");
-    if (effectivePlan() === "pro") {
-      cap.textContent = "Pro plan: unlimited saved plans, Curriculum Builder import, and printing.";
+    if (effectivePlan() === "instructor") {
+      cap.textContent = "Pro Instructor plan: unlimited saved plans, Curriculum Builder import, and printing.";
     } else {
       cap.textContent = "Free plan: up to " + L.FREE_PLAN_LIMIT + " saved plans (" + state.plans.length +
-        " saved), standalone mode, on-screen. Pro adds unlimited plans, Curriculum Builder import, and printing. " +
+        " saved), standalone mode, on-screen. Pro Instructor adds unlimited plans, Curriculum Builder import, and printing. " +
         "Nothing is ever deleted if a plan changes — the limits only apply to new plans.";
     }
   }
@@ -1481,7 +1482,7 @@
 
   function refreshImportMode() {
     if (window.MMCPCloud && window.MMCPCloud.refreshImportMode) window.MMCPCloud.refreshImportMode();
-    else setImportAvailability(effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
+    else setImportAvailability(effectivePlan() === "instructor" ? "locked-signin" : "locked-plan");
   }
 
   function renderAll() {
@@ -1499,7 +1500,7 @@
       renderAll();
     },
     applyPlanFromAccount(plan) {
-      accountPlan = plan === "pro" ? "pro" : "free";
+      accountPlan = (plan === "pro" || plan === "instructor") ? plan : "free";
       signedIn = true;
       renderAll();
     },
@@ -1681,8 +1682,8 @@ async function cloudLoad(){
 /* ---------------- Curriculum Builder import ---------------- */
 async function refreshImportMode(){
   if (!M) return;
-  if (!sb || !currentUser){ M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan"); return; }
-  if (M.effectivePlan() !== "pro"){ M.setImportAvailability("locked-plan"); return; }
+  if (!sb || !currentUser){ M.setImportAvailability(M.effectivePlan() === "instructor" ? "locked-signin" : "locked-plan"); return; }
+  if (M.effectivePlan() !== "instructor"){ M.setImportAvailability("locked-plan"); return; }
   try {
     curriculaCache = must(await sb.from("curricula")
       .select("id,name,art,class_minutes,weeks,classes_per_week,grading_final_class")
@@ -1760,7 +1761,7 @@ window.MMCPCloud = { refreshImportMode };
 async function fetchPlan(userId){
   const data = must(await sb.from("profiles").select("plan").eq("id", userId).single(),
     "Could not read your plan");
-  return data && data.plan === "pro" ? "pro" : "free";
+  return data && (data.plan === "pro" || data.plan === "instructor") ? data.plan : "free";
 }
 async function handleSession(session){
   currentUser = session && session.user ? session.user : null;
@@ -1780,8 +1781,8 @@ async function handleSession(session){
   catch (e) { acctStatus(e.message + " — defaulting to the Free plan.", "err"); }
   M.applyPlanFromAccount(plan);
   const badge = $m("acctPlanBadge");
-  badge.textContent = plan === "pro" ? "Pro plan" : "Free plan";
-  badge.classList.toggle("pro", plan === "pro");
+  badge.textContent = plan === "instructor" ? "Pro Instructor plan" : plan === "pro" ? "Pro plan" : "Free plan";
+  badge.classList.toggle("pro", plan !== "free");
   // The cloud copy wins when there is one; when there is none, back
   // this device's plans up so nothing local is ever lost.
   const had = await cloudLoad();
@@ -1835,7 +1836,7 @@ if (M) M.setCloudHook(() => {
     sb = mod.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: MM_AUTH_OPTIONS });
   } catch (e) {
     acctStatus("Accounts aren't available right now — everything still works on this device.", "err");
-    if (M) M.setImportAvailability(M.effectivePlan() === "pro" ? "locked-signin" : "locked-plan");
+    if (M) M.setImportAvailability(M.effectivePlan() === "instructor" ? "locked-signin" : "locked-plan");
     return;
   }
   sb.auth.onAuthStateChange((_event, session) => { handleSession(session); });

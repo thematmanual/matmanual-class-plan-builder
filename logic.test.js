@@ -153,9 +153,10 @@ for (let i = 0; i < 300; i++) {
   ok(L.canCreatePlan(empty, "free"), "free can create first plan");
   const three = { v: 1, plans: [1, 2, 3].map(i => L.newPlan({ name: "P" + i })), activePlanId: null };
   ok(!L.canCreatePlan(three, "free"), "free blocked at 3 plans");
-  ok(L.canCreatePlan(three, "pro"), "pro unlimited");
-  ok(!L.canImport("free") && L.canImport("pro"), "import is Pro");
-  ok(!L.canPrint("free") && L.canPrint("pro"), "print is Pro");
+  ok(!L.canCreatePlan(three, "pro"), "student Pro gets the free limits in this instructor tool");
+  ok(L.canCreatePlan(three, "instructor"), "instructor unlimited");
+  ok(!L.canImport("free") && !L.canImport("pro") && L.canImport("instructor"), "import is Pro Instructor");
+  ok(!L.canPrint("free") && !L.canPrint("pro") && L.canPrint("instructor"), "print is Pro Instructor");
 }
 
 console.log(`\n${n} assertions, ${fails} failures`);

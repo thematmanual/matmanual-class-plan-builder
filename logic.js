@@ -30,11 +30,12 @@
  * and prints.
  *
  * TIERS (app layer, mirroring the sibling tools; RLS enforces
- * ownership only): Free = up to 3 saved plans, standalone mode
- * only, on-screen. Pro = unlimited plans, Curriculum Builder
- * import, and printing. A downgrade deletes nothing — the caps
- * only block creating NEW plans, and plans already saved stay
- * fully usable.
+ * ownership only): this is an instructor tool — Free = up to 3
+ * saved plans, standalone mode only, on-screen, and a student Pro
+ * account gets exactly that same free tier here. Pro Instructor =
+ * unlimited plans, Curriculum Builder import, and printing. A
+ * downgrade deletes nothing — the caps only block creating NEW
+ * plans, and plans already saved stay fully usable.
  */
 (function (global) {
   "use strict";
@@ -490,10 +491,10 @@
   // ---- Tier gating -------------------------------------------------------------------
   var FREE_PLAN_LIMIT = 3;
   function canCreatePlan(state, plan) {
-    return plan === "pro" || !state || !Array.isArray(state.plans) || state.plans.length < FREE_PLAN_LIMIT;
+    return plan === "instructor" || !state || !Array.isArray(state.plans) || state.plans.length < FREE_PLAN_LIMIT;
   }
-  function canImport(plan) { return plan === "pro"; }
-  function canPrint(plan) { return plan === "pro"; }
+  function canImport(plan) { return plan === "instructor"; }
+  function canPrint(plan) { return plan === "instructor"; }
 
   var API = {
     PROFILES: PROFILES, PROFILE_IDS: PROFILE_IDS,
