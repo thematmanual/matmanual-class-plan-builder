@@ -30,6 +30,7 @@
     --serif-body:"Newsreader",Georgia,serif;
     --sans:"Archivo",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
   }
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   *{box-sizing:border-box}
   body{
     margin:0;background:var(--paper);color:var(--ink);
@@ -106,7 +107,7 @@
   }
   input[type=text],input[type=number],input[type=email],input[type=password],input[type=date],select,textarea{
     width:100%;padding:.62rem .72rem;border:1px solid var(--hair-strong);border-radius:6px;
-    font-size:15.5px;font-family:var(--sans);color:var(--ink);background:#fff;
+    font-size:16px;font-family:var(--sans);color:var(--ink);background:#fff;
   }
   input:focus,select:focus,textarea:focus{
     outline:none;border-color:var(--teal);
@@ -252,7 +253,7 @@
   .pick-group{margin:0 0 1.1rem}
   .pick-group h3{margin:.9rem 0 .45rem;font-size:19px}
   .tech-chips{display:flex;gap:.4rem;flex-wrap:wrap}
-  .tech-chips .chip{min-height:36px;padding:.35rem .8rem;font-weight:500}
+  .tech-chips .chip{min-height:44px;padding:.35rem .8rem;font-weight:500}
   .search-row{display:grid;grid-template-columns:1fr;gap:.8rem}
   @media (min-width:760px){ .search-row{grid-template-columns:1fr 1fr} }
 
